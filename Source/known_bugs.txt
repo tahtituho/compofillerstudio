@@ -1,0 +1,6 @@
+Compofiller Studio
+Known bugs
+
+* if you change the music by copying a new 4klang.inc, it doesn't trigger auto-rebuid
+* if you change the music, song length in the DLL remains wrong, if you Keep audio
+

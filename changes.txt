@@ -1,0 +1,115 @@
+Compofiller Studio 1.0
+"IDE" for making Windows 4k intros
+by Yzi
+2018-11-28
+
+Changes and wish list
+
+
+
+TODO / IDEAS / WISH LIST for future versions
+
+* Feature: zip the prod (.exe, .nfo, screenshot.jpeg)
+* Feature: GLSL syntax highlighting (instead of C/C++)
+* Feature: time-sending VST plugin for syncing Compofiller Studio to a DAW, to create music for existing visuals
+* Feature: easy-to-use 4klang music editor without requiring a VST host
+
+
+
+CHANGES, newest first
+
+=== Beta 8 (2018-11-28) ===
+* Improvement: DLL rebuild now preserves playback state and position, so it doesn't jump to start all the time anymore.
+* Fixed: When toggling play/pause from the shader editor using the F9 keyboard shortcut, the editor window drops to back in z-order
+* Changed: Undefined .script variables act as empty strings now, like in GNU make. Previously, using an undefined variable raised an exception and crashed the program.
+* Feature: Scripts now support ifeq/ifneq/ifdef/ifndef conditionals
+* Feature: Linker is now selectable between GNU ld and Crinkler. GNU ld is used in base.config by default, so you can build testing exes really quickly, without waiting for Crinkler at all.
+* Improvement: The run thread is now more robust, and can gracefully report errors, crash and die.
+* Feature: "Timings and texts" and a bunch of options for it.
+* Improvement: forced GO4K_USE_16BIT_OUTPUT define for 4klang, so it no longer crashes and produces noise, if a 32 bit float format song is given
+* Changed: Default 4k template project now has more "features" activated.
+* Replaced the GUI widgets for changing the 4klang tune with an explanation text.
+* Probably fixed some memory leaks, maybe introduced new ones. 
+* + many small things, fixes and new bugs I forgot.
+
+
+=== Beta 7 (2018-08-24) ===
+* Feature: Added support for mipmapping the textures, so you can texture2DLod() your stuff pre-blurred
+* Feature: Added "Negative time on 2nd pass" option, so the post-processing shader pass can be time-dependent. 
+		If "Negative time on 2nd pass" is unchecked, the post-process pass will get time == 0.0, like before.
+
+
+=== Beta 6 (2018-08-23) ===
+* Feature: Average frames-per-second display in the visuals form's title bar. The FPS number is an average over 3 previous frames.
+* Fixed: Time display isn't updated in pause mode (bug introduced in Beta 5)
+* Fixed: The text editors' file path isn't changed when you Save As the project to a new directory.
+* Added Doc folder with pics describing the multi-pass rendering options
+* Added linker selection in the GUI, though it's disabled for now. In the future I want to be able to quickly link a testing EXE with just GNU ld, no waiting for Crinkler.
+* Added hint texts to playback actions, and now the hints for the playback buttons also show the keyboard shortcuts
+
+
+=== Beta 5 (2018-08-19) ===
+* Fixed: Editing/typing numeric values moves the cursor to the beginning (which was annoying)
+* Fixed: Auto-rebuild sometimes builds twice. Fixed at least some cases.
+* Fixed: "as it will be sent" shader editor shows two concatenated copies of the same text
+* Improved: Shader warnings are shown in the editor's bottom bar after auto-recompile, if there's no compiler _error_, and even if the cursor isn't on the warning line
+* Improved: Added hint text when saving in editor "Note: automatic re-compilation and error-checking only work in Play or Pause mode."
+* Feature: Added keyboard shortcuts for playback
+	* F9 : Play/Pause
+	* F10 : Stop (and terminate visuals run thread)
+	* F11 : Seek backward, nudge in Pause mode
+	* Shift+F11 : Seek backward by one time base unit (e.g. bar)
+	* Ctrl+F11 : Go to start of loop
+	* Ctrl+Shift+F11 : Go to start
+	* F12 : Seek forward, nudge in Pause mode
+	* Shift+F12 : Seek forward by one time base unit (e.g. bar)
+	* Ctrl+F12 : Go to end of loop
+	* Ctrl+Shift+F12 : Go to end
+* Feature: Added a rudimentary search feature in the text editor. Press Ctrl+F to search.
+* Feature: Loop area is shown on the top ruler of the time/waveform display
+* Improved: The audio waveform display is now more accurate and consumes less CPU time
+
+
+=== Beta 4 (2018-08-17) ===
+* Fixed: "Shader text as it will be sent to the shader compiler" text is not cleared, if changing back to a non-minified config.
+* Fixed: Shader auto-reload does not work in pause mode, if there are GLSL compiler warnings
+* Fixed: "Implicit cast from vec4 to vec2" warning in the default 4k template shader
+* Fixed: Play/Pause button is not refreshed when auto-stopping at EXE build or run
+* Fixed: Editor window doesn't change if the shader file name changes when minifying or changing configs
+* New: The shader text editor's original and "as it will be" parts can be resized
+* New: Shader compilation errors and warnings are shown in the editor. The editor automatically scrolls to the first error.
+* New: Black background and anti-aliased text in the shader editor.
+* New: If the shader is minified and in ".h" format, and the shader won't compile, the shader editor tries to show the offending parts highlighted in red on the right-hand text
+
+
+=== Beta 3 (2018-08-15) ===
+* Fixed: "Run EXE" shows a useless error about not being able to "build run"
+* Fixed: final.config now has 1280x720 resolution by default
+* New: Right-click the Visuals preview window and select "Stay on top" to have it stay on top of the editor windows
+* New: separate Pause and Stop modes, where Stop terminates the visuals thread entirely, but Pause keeps it alive
+* New: busy indicator when a build is running, green background and title text e.g. "Building EXE..."
+* New: "Edit info text" feature
+* New: Screenshot feature: grab a JPEG screenshot of the current frame. The visuals have to be running or paused.
+* New: "Previous frame to texture" feature, for feedback effects. (Copies default framebuffer to texture with glCopyTexImage2D)
+* New: "Two-pass rendering" feature, for post-processing. 
+	Copies the default framebuffer to texture with glCopyTexImage2D, and re-runs the same shader with time==0.0.
+	Both passes are handled by the same shader. Use "if (time==0.0) { do_post_process(); } else ( do_regular_frame(); }"
+	If you use both Frame-to-texture and two-pass, there will be TWO glCopyTexImage2D() calls per output frame.
+
+In my own tests, using the new texture features increased the compressed exe size like this: (using only 100 order tries)
+
+	[ ] Previous frame to texture, [ ] Two-pass : +0 bytes (base level)
+	[x] Previous frame to texture, [ ] Two-pass : +67 bytes
+	[ ] Previous frame to texture, [x] Two-pass : +73 bytes
+	[x] Previous frame to texture, [x] Two-pass : +75 bytes
+
+
+
+=== Beta 2 ===
+* Fixed: crash if Compofiller Studio is run from user's directory like My Documents 
+	(bug in Lazarus CopyDirTree library routine, fixed by updating Lazarus from 1.6 to 1.8.4)
+
+
+=== Beta 1 ===
+* First release on #revision irc channel
+

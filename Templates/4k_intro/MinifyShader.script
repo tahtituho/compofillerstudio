@@ -1,0 +1,20 @@
+# Compofiller Studio
+# by Yzi
+#
+# MinifyShader.script
+#
+# This script runs Shader Minifier
+#
+# Compofiller Studio provides this script with the SOURCE_FILE and DESTINATION_FILE variables
+
+
+CLEAN_SHADER_EXE="$(PROGRAM_DIR)\Tools\CleanShader.exe"
+
+TEMP_CLEANED_SHADER_FILE=__temp_cleaned_shader.glsl
+
+# the clean-up tries to remove stuff that Shader Minifier can't handle
+$(TEMP_CLEANED_SHADER_FILE): $(SOURCE_FILE)
+    $(CLEAN_SHADER_EXE) $< $@
+    
+$(DESTINATION_FILE):
+    "$(PROGRAM_DIR)\Tools\ShaderMinifier\shader_minifier.exe" $(TEMP_CLEANED_SHADER_FILE) -o $(DESTINATION_FILE)

@@ -1,0 +1,19 @@
+object VisualsForm: TVisualsForm
+  Left = 26
+  Height = 508
+  Top = 136
+  Width = 651
+  Caption = 'Visuals preview'
+  OnShow = FormShow
+  PopupMenu = PopupMenu1
+  PopupMode = pmAuto
+  LCLVersion = '1.8.4.0'
+  object PopupMenu1: TPopupMenu
+    left = 352
+    top = 40
+    object StayOnTopMenuItem: TMenuItem
+      Caption = 'Stay on top'
+      OnClick = StayOnTopMenuItemClick
+    end
+  end
+end

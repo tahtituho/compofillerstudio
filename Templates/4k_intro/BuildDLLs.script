@@ -1,0 +1,55 @@
+# Compofiller Studio
+# by Yzi
+#
+# BuildDLLs.script
+#
+# WE HAVE MANY TYPES OF SCRIPT FILES
+#
+# Build scripts
+#   *  common variables/definitions script, which "bakes" stuff from configs into variables
+#   *  DLL (test/debug) master script
+#   *  EXE (run/release) master script
+#
+# Settings/configuration scripts
+#   *  Project global script (which also serves as the project file?)
+#   *  Configuration scripts (1 per configuration)
+#         
+#           SHADER_FILE
+
+#   Explanation of automatically set target variables 
+# $@ expands to the target (i.e. text that's before the colon ':')
+# $< expands to the first prerequisite (i.e. the first space-delimited string that's after the colon ':')
+# $^ expands to all prerequisites (i.e. the whole text that's after the colon ':')
+
+
+
+include $(PROJECT_FILE)
+
+include $(CONFIG_FILE)
+
+include common.script
+
+
+
+# Audio debug/test DLL 
+debug_4klang.obj: debug_4klang_wrapper.asm 4klang.asm 4klang.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(FORCED_4KLANG_OPTS) -o $@ $<
+
+debug_audio.obj: debug_audio.asm errormsg.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+debug_audio.dll: debug_audio.obj debug_4klang.obj
+	$(DEBUG_LINKER_EXE) $(DEBUG_LINKER_OPTS) -o $@ $^ $(DEBUG_LINKER_AUDIO_LIBS_PARAMS)
+
+
+# Visuals debug/test DLL 
+#shader_code.obj: shader_code.asm $(SHADER_FILE)
+#	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) -o $@ $<
+
+debug_visuals.obj: debug_visuals.asm errormsg.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) -o $@ $<
+
+#debug_visuals.dll: debug_visuals.obj shader_code.obj
+debug_visuals.dll: debug_visuals.obj
+	$(DEBUG_LINKER_EXE) $(DEBUG_LINKER_OPTS) -o $@ $^ $(DEBUG_LINKER_VISUALS_LIBS_PARAMS)
+

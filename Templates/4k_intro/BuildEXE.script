@@ -1,0 +1,31 @@
+# Compofiller Studio
+# by Yzi
+#
+# BuildEXE.script
+
+include $(PROJECT_FILE)
+
+include $(CONFIG_FILE)
+
+include common.script
+
+PREPROCESS_SHADER_EXE="$(PROGRAM_DIR)\Tools\PreprocessShader.exe"
+
+TEMP_PROCESSED_SHADER_FILE=__temp_processed_shader.glsl
+
+    
+4klang.obj: 4klang.asm 4klang.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(FORCED_4KLANG_OPTS) -o $@ $<
+
+$(TEMP_PROCESSED_SHADER_FILE): $(SHADER_FILE)
+    $(PREPROCESS_SHADER_EXE) $< $@
+
+shader_code.obj: shader_code.asm $(TEMP_PROCESSED_SHADER_FILE)
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) \
+           -DTEMP_PROCESSED_SHADER_FILE=$(QUOTE)$(TEMP_PROCESSED_SHADER_FILE)$(QUOTE) -o $@ $<
+
+exemain.obj: exemain.asm
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) -o $@ $<
+
+$(OUTPUT_EXE_NAME): exemain.obj shader_code.obj 4klang.obj
+	$(FINAL_LINKER_EXE) $(FINAL_LINKER_OPTS) $(FINAL_LINKER_OUT_OPT)$@ $^ $(FINAL_LINKER_LIBS_PARAMS)

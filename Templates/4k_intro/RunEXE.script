@@ -1,0 +1,11 @@
+# Compofiller Studio
+# by Yzi
+#
+# RunEXE.script
+
+include $PROJECT_FILE
+
+include $CONFIG_FILE
+
+run:
+    $OUTPUT_EXE_NAME

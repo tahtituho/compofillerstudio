@@ -1,0 +1,1 @@
+Support for 1k intros will be added in a later version Compofiller Studio.

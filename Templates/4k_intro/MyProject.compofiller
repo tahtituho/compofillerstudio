@@ -1,0 +1,21 @@
+# Compofiller Studio project file
+
+PROJECT_NAME=MyProject
+
+PROJECT_INFO_FILE=prod.nfo
+PROJECT_SCREENSHOT=
+
+# Currently active config file name
+ACTIVE_CONFIG=base.config
+
+# ------- GUI options/preferences --------
+# Automatically rebuild DLLs when things have changed?
+AUTOREBUILD_DLLS=1
+
+# Keep the previous audio buffer when rebuilding DLLs, allocating a new fresh buffer?
+# Even if the previous audio is kept, a new audio rendering thread is started.
+KEEP_AUDIO=1
+
+
+# ------ Timings and texts editor options/preferences ------
+AUTO_LOCATE_TO_ACTIVE_TEXT=1

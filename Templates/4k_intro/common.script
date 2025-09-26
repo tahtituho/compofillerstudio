@@ -1,0 +1,108 @@
+# Compofiller Studio by Yzi
+#
+# Parameter construction rules that both/all build scripts need, but can't reside in
+# .config scripts, unless we support "deferred expansion". Which we don't, at least yet.
+
+#
+# Note about spaces in path names:
+#
+#   Any file name/path that includes $(PROGRAM_DIR) must be enclosed in quotes, like 
+#   "$(PROGRAM_DIR)\Tools\Crinkler\crinkler.exe" or "$(PROGRAM_DIR)\Libs", because 
+#   PROGRAM_DIR might contain spaces.
+#  
+#   Paths that are relative to the project directory, don't have to be enclosed in quotes,
+#   because Compofiller Studio changes the current directory to the project directory.
+#   All you have to do is make sure the file names don't contain spaces.
+#
+ 
+VISUALS_USE_TIME_UNIFORM_DEFINE=-DUSE_TIME_UNIFORM=$(USE_TIME_UNIFORM)
+VISUALS_TIME_UNIFORM_NAME_DEFINE=-DTIME_UNIFORM_NAME=$(TIME_UNIFORM_NAME)
+VISUALS_USE_RESOLUTION_UNIFORM_DEFINE=-DUSE_RESOLUTION_UNIFORM=$(USE_RESOLUTION_UNIFORM)
+VISUALS_RESOLUTION_UNIFORM_NAME_DEFINE=-DRESOLUTION_UNIFORM_NAME=$(RESOLUTION_UNIFORM_NAME)
+
+
+VISUALS_ASM_OPTS=$(VISUALS_USE_TIME_UNIFORM_DEFINE) $(VISUALS_USE_RESOLUTION_UNIFORM_DEFINE) \
+    $(VISUALS_TIME_UNIFORM_NAME_DEFINE) $(VISUALS_RESOLUTION_UNIFORM_NAME_DEFINE) \
+    -DTWO_PASS_RENDERING=$(TWO_PASS_RENDERING) -DFRAME_TO_TEXTURE=$(FRAME_TO_TEXTURE) \
+    -DUSE_MIPMAP=$(USE_MIPMAP) -DSECOND_PASS_NEGATIVE_TIME=$(SECOND_PASS_NEGATIVE_TIME) \
+    -DRESOLUTION_X=$(RESOLUTION_X) -DRESOLUTION_Y=$(RESOLUTION_Y) \
+    -DTIME_DIVIDER=$(TIME_DIVIDER) -DTIME_DIVIDER_INT=$(TIME_DIVIDER_INT) \
+    -DAUDIO_SAMPLING_RATE=$(AUDIO_SAMPLING_RATE) \
+    -DAUDIO_DELAY=$(AUDIO_DELAY) \
+    -DAUDIO_BUFFER_ALLOCATED_LENGTH=$(AUDIO_BUFFER_ALLOCATED_LENGTH) \
+    -DPROD_END_TIME=$(PROD_END_TIME) \
+    -DTEXT_BITMAP_RESOLUTION_X=$(TEXT_BITMAP_RESOLUTION_X) -DTEXT_BITMAP_RESOLUTION_Y=$(TEXT_BITMAP_RESOLUTION_Y) \
+    "-DTEXT_FONT_NAME=$(TEXT_FONT_NAME)" -DTEXT_FONT_SIZE=$(TEXT_FONT_SIZE) \
+    -DTEXT_FONT_STRIKEOUT=$(TEXT_FONT_STRIKEOUT) \
+    -DTEXT_FONT_UNDERLINE=$(TEXT_FONT_UNDERLINE) \
+    -DTEXT_FONT_ITALIC=$(TEXT_FONT_ITALIC) \
+    -DTEXT_FONT_WEIGHT=$(TEXT_FONT_WEIGHT) \
+    -DTEXT_FONT_ORIENTATION=$(TEXT_FONT_ORIENTATION) \
+    -DTEXT_FONT_ESCAPEMENT=$(TEXT_FONT_ESCAPEMENT) \
+    -DTEXT_FONT_WIDTH=$(TEXT_FONT_WIDTH) \    
+    -DTEXT_CHARACTER_EXTRA_SPACING=$(TEXT_CHARACTER_EXTRA_SPACING) \
+    -DTEXTS_UNIFORM_NAME=$(TEXTS_UNIFORM_NAME) \
+    -DUSE_TEXTS=$(USE_TEXTS) -DUSE_TEXTS_UNIFORM=$(USE_TEXTS_UNIFORM) \
+    -DUSE_WIDECHAR_TEXTS=$(USE_WIDECHAR_TEXTS)
+
+
+# this doesn't need to go to the assembler anymore, because the shader goes via PreprocessShader.exe to a hard-coded file name
+#    -DSHADER_FILE=$(QUOTE)$(SHADER_FILE)$(QUOTE) 
+
+
+# We force 16 bit output. This prevents non-working audio and crash, when a 32 bit float format song is given.
+FORCED_4KLANG_OPTS=-DGO4K_USE_16BIT_OUTPUT
+
+
+ASSEMBLER_PROGRAM=yasm
+
+########### Tools  ###########
+ASSEMBLER_EXE="$(PROGRAM_DIR)\Tools\NASM\nasm.exe"
+ASSEMBLER_OPTS=-f win32 -w-orphan-labels
+# You could try this to get debug symbols, but it just doesn't seem to work.
+#ASSEMBLER_OPTS=-w-orphan-labels -f win32 -F cv8 -g
+
+
+# Linker for building the DLLs for testing in the GUI
+DEBUG_LINKER_EXE="$(PROGRAM_DIR)\Tools\Linker\ld.exe"
+
+# Library path. Where are the .lib files located?
+LIB_PATH="$(PROGRAM_DIR)\Libs"
+
+
+######## Things for the debug DLL ########
+DEBUG_LINKER_OPTS=--dll -entry=DllMain@12 -L $(LIB_PATH)
+
+# Windows library import files needed for linking the DLL
+DEBUG_LINKER_COMMON_LIBS_PARAMS=-l kernel32 -l user32
+
+# for audio DLL
+DEBUG_LINKER_AUDIO_LIBS_PARAMS=-l winmm $(DEBUG_LINKER_COMMON_LIBS_PARAMS)
+
+# for visuals DLL
+DEBUG_LINKER_VISUALS_LIBS_PARAMS=$(DEBUG_LINKER_COMMON_LIBS_PARAMS) -l gdi32 -l opengl32 
+
+
+########## EXE linker things ###########
+
+ifeq ($(EXE_LINKER_PROGRAM),Crinkler)
+# Crinkler settings
+# Linker for building standalone EXE files for running
+FINAL_LINKER_EXE="$(PROGRAM_DIR)\Tools\Crinkler\crinkler.exe"
+FINAL_LINKER_OPTS=/SUBSYSTEM:WINDOWS /ENTRY:t /COMPMODE:SLOW /HASHSIZE:200 /HASHTRIES:50 /ORDERTRIES:$(CRINKLER_ORDERTRIES) \
+    /UNSAFEIMPORT /LIBPATH:$(LIB_PATH) /REPORT:crinkler_report.html /PROGRESSGUI
+FINAL_LINKER_OUT_OPT=/OUT:
+FINAL_LINKER_GENERAL_LIBS_PARAMS=kernel32.lib user32.lib
+FINAL_LINKER_AUDIO_LIBS_PARAMS=winmm.lib
+FINAL_LINKER_VISUALS_LIBS_PARAMS=gdi32.lib opengl32.lib
+FINAL_LINKER_LIBS_PARAMS=$(FINAL_LINKER_GENERAL_LIBS_PARAMS) $(FINAL_LINKER_AUDIO_LIBS_PARAMS) $(FINAL_LINKER_VISUALS_LIBS_PARAMS)
+else
+# GNU ld settings
+FINAL_LINKER_EXE="$(PROGRAM_DIR)\Tools\Linker\ld.exe"
+FINAL_LINKER_OPTS=-e t -L $(LIB_PATH)
+FINAL_LINKER_OUT_OPT=-o 
+FINAL_LINKER_GENERAL_LIBS_PARAMS=-l kernel32 -l user32
+FINAL_LINKER_AUDIO_LIBS_PARAMS=-l winmm
+FINAL_LINKER_VISUALS_LIBS_PARAMS=-l gdi32 -l opengl32
+FINAL_LINKER_LIBS_PARAMS=$(FINAL_LINKER_GENERAL_LIBS_PARAMS) $(FINAL_LINKER_AUDIO_LIBS_PARAMS) $(FINAL_LINKER_VISUALS_LIBS_PARAMS)
+endif
