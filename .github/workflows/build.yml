@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Lazarus and RichMemo
+        uses: gcarreno/setup-lazarus@v3
+        with:
+          lazarus-version: "3.2"
+          include-packages: "RichMemo"
+
+      - name: Install i386 cross-compiler
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'fpc-cross-i386.exe'
+          $url = 'https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/Lazarus%203.2/lazarus-3.2-fpc-3.2.2-cross-i386-win32-win64.exe/download'
+          Invoke-WebRequest -Uri $url -OutFile $installer
+
+          $lazarusDir = Join-Path $env:RUNNER_TEMP 'lazarus'
+          $process = Start-Process -FilePath $installer `
+            -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=$lazarusDir") `
+            -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "The i386 cross-compiler installer failed with exit code $($process.ExitCode)."
+          }
+
+      - name: Build Debug (Win32/i386)
+        run: lazbuild -B --build-mode=Debug --cpu=i386 --os=win32 Source\CompofillerStudio.lpi
+
+      - name: Build Release (Win32/i386)
+        run: lazbuild -B --build-mode=Release --cpu=i386 --os=win32 Source\CompofillerStudio.lpi
