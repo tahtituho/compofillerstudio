@@ -6,8 +6,8 @@ unit UTimingsAndTextsEditorForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ValEdit,
-  Grids, StdCtrls, ActnList, EditBtn, Spin, ButtonPanel, ComCtrls, ExtCtrls,
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
+  Grids, StdCtrls, ActnList, Spin, ComCtrls, ExtCtrls,
   UEngine,
   UConfigUIMappingHelpers;
 

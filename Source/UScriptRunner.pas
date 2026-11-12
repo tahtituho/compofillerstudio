@@ -253,6 +253,8 @@ function TConditionalStack.EvaluateEquivalenceCondition(AConditionalString : Str
 var
   c, s, arg1, arg2, arg1_expanded, arg2_expanded : String;
 begin
+  arg1 := '';
+  arg2 := '';
   c := Trim(AConditionalString);
   if Length(c) = 0 then raise Exception.Create('invalid ifeq/ifneq condition statement');
   // What kind of statement is it?
@@ -286,6 +288,8 @@ var
   must_be_else_if : Boolean;
 begin
   Result := false;
+  first_word := '';
+  remainder := '';
   must_be_else_if := false;
   line := Trim(ALine);
 
@@ -423,7 +427,7 @@ end;
 function TScriptRunner.Exec(const AFilePath, AParams : String): Integer;
 var
   exepath : String;
-//  cmdline : String;
+  commandline : String;
   output_buffer : array[1..EXEC_OUTPUT_BUFFER_SIZE] of Byte;
   process : TProcess;
   output_stream : TMemoryStream;
@@ -439,17 +443,14 @@ begin
     if not FileExists(exepath) then
       raise Exception.CreateFmt('%s not found.', [AFilePath]);
 
-    if (exepath <> '') and (exepath[1] <> '"')  then
-        exepath := '"' + exepath + '"'; // ... and this adds them back!
-
-//    process.Executable := exepath;
-//    process.Parameters.Add(AParams);
-    process.CommandLine := exepath + ' ' + AParams;
+    commandline := '"' + exepath + '" ' + AParams;
+    process.Executable := exepath;
+    CommandToList(AParams, process.Parameters);
     process.Options := [poUsePipes, poStderrToOutput];
     process.ShowWindow := swoHIDE;
 
     // Display the command line we're about to execute.
-    AddProcessOutput('> ' + process.CommandLine, 0);
+    AddProcessOutput('> ' + commandline, 0);
 
     process.Execute;
     if process.Output = nil then raise Exception.Create('aaargh');
@@ -458,6 +459,7 @@ begin
 
     i := 0;
     s := '';
+    FillChar(output_buffer, SizeOf(output_buffer), 0);
     repeat
       bytes_read := process.Output.Read(output_buffer, SizeOf(output_buffer));
 

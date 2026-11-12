@@ -13,9 +13,7 @@ uses
 
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, RichMemo,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, ActnList,
-  Arrow, EditBtn, ComboEx, Buttons, ButtonPanel,
-
-  UAudioDLL, UVisualsDLL,
+  EditBtn, Buttons,
   UEngine,
 
   UWaveformZoomDisplay, Types,
@@ -289,7 +287,6 @@ implementation
 uses
   strutils,
   LCLType,
-  UBuilder,
   UVariableNames,
   UVisualsForm,
   UEditorForm,
@@ -484,10 +481,12 @@ var
   s : String;
   time_base_effective_value_config,
     music_effective_value_config,
-    old_time_divider, new_time_divider : String;
+    new_time_divider : String;
   total_audio_buffer_length, audio_delay : Integer;
+    format_settings : TFormatSettings;
 begin
-  DecimalSeparator := '.';
+    format_settings := DefaultFormatSettings;
+    format_settings.DecimalSeparator := '.';
   if FEngine <> nil then
   begin
     muslen := FEngine.GetMusicLengthSamples();
@@ -503,7 +502,7 @@ begin
       Exit;
     end;
 
-    MusicBPMEdit.Text := FormatFloat('0.000', musbpm);
+    MusicBPMEdit.Text := FormatFloat('0.000', musbpm, format_settings);
     MusicLengthSamplesEdit.Text := IntToStr(muslen);
     MusicSampleRateEdit.Text := IntToStr(smprate);
 
@@ -512,7 +511,7 @@ begin
     MusicLengthMinutesSecndsEdit.Text := minutes + ' m ' + seconds + ' s';
 
     s := FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_BEATS_PER_BAR);
-    beats_per_bar := StrToFloat(s);
+    beats_per_bar := StrToFloat(s, format_settings);
 
     time_base := FEngine.GetEffectiveVariableValueInActiveConfig(CV_TIME_BASE);
     if time_base = 'custom' then
@@ -537,19 +536,16 @@ begin
         // time equation:     time = audiotime / smprate
         time_divider := smprate;
 
-      TimeDividerEdit.Text := FormatFloat('0.000', time_divider);
+      TimeDividerEdit.Text := FormatFloat('0.000', time_divider, format_settings);
     end;
 
     // Find out in which config TIME_BASE is defined
     time_base_effective_value_config := FEngine.GetConfigNameOfEffectiveValueForVariable(CV_TIME_BASE);
 
-    // Before writing new TIME_DIVIDER, find out what it was. The current debug_audio.dll was built using that value.
-    old_time_divider := FEngine.GetEffectiveVariableValueInConfig(time_base_effective_value_config, CV_TIME_DIVIDER);
-
     new_time_divider := TimeDividerEdit.Text;
     // Set TimeDivider to the value that was calculated based on tempo and config settings (from debug_audio.dll where it got from 4klang.inc)
     FEngine.SetVariableValueInConfig(time_base_effective_value_config, CV_TIME_DIVIDER, new_time_divider);
-    FEngine.SetVariableValueInConfig(time_base_effective_value_config, CV_TIME_DIVIDER_INT, IntToStr(Trunc(StrToFloat(new_time_divider))));
+    FEngine.SetVariableValueInConfig(time_base_effective_value_config, CV_TIME_DIVIDER_INT, IntToStr(Trunc(StrToFloat(new_time_divider, format_settings))));
 
     // Did we change TIME_BASE? (it might be a better idea to actually get the effective value from the DLL itself)
 //    if new_time_divider <> old_time_divider then
@@ -566,8 +562,8 @@ begin
     FEngine.SetVariableValueInConfig(music_effective_value_config, CV_AUDIO_SAMPLING_RATE, IntToStr(smprate));
 
     FEngine.TimeDivider := time_divider;
-    FEngine.LoopStart := StrToFloat(FEngine.GetEffectiveVariableValueInActiveConfig(CV_LOOP_START));
-    FEngine.LoopEnd := StrToFloat(FEngine.GetEffectiveVariableValueInActiveConfig(CV_LOOP_END));
+    FEngine.LoopStart := StrToFloat(FEngine.GetEffectiveVariableValueInActiveConfig(CV_LOOP_START), format_settings);
+    FEngine.LoopEnd := StrToFloat(FEngine.GetEffectiveVariableValueInActiveConfig(CV_LOOP_END), format_settings);
     FEngine.LoopEnabled := (FEngine.GetEffectiveVariableValueInActiveConfig(CV_LOOP_ENABLED) = '1');
 
     RefreshWaveformDisplayParameters;
@@ -609,15 +605,11 @@ end;
 
 procedure TMainForm.AddProcessOutputLine(AString : String; AIndentDepth : Integer);
 
-  procedure AddColoredLine(AString: String; const AColor : TColor; ACanAddLink : Boolean);
-  var
-    fname : String;
+  procedure AddColoredLine(AString: String; const AColor : TColor);
   begin
     ProcessOutputMemo.SelStart := Length(ProcessOutputMemo.Text);
     ProcessOutputMemo.SelText := AString;
     ProcessOutputMemo.SelLength := Length(AString);
-//    if ACanAddLink and LooksLikeReferenceToTextFile(AString, fname) then // add link to file
-//      ProcessOutputMemo.SetLink(ProcessOutputMemo.SelStart, Length(fname), true, fname);
     ProcessOutputMemo.SetRangeColor(ProcessOutputMemo.SelStart, ProcessOutputMemo.SelLength, AColor);
 
     ProcessOutputMemo.SelStart := Length(ProcessOutputMemo.Text);
@@ -658,7 +650,7 @@ begin
     indent := indent + '    ';
     Dec(AIndentDepth);
   end;
-  AddColoredLine(indent + AString + #13, c, (c = WARNING_COLOR) or (c = ERROR_COLOR));
+  AddColoredLine(indent + AString + #13, c);
 end; // procedure TMainForm.AddProcessOutputLine
 
 
@@ -749,18 +741,18 @@ end;
 procedure TMainForm.SeekBackwardActionExecute(Sender: TObject);
 begin
   if FEngine.Running then // in play mode, seek speed is 250 ms per click/press
-    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition - (FEngine.GetMusicSampleRate * 250) div 1000)
+    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition - (Integer(FEngine.GetMusicSampleRate) * 250) div 1000)
   else
-    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition - (FEngine.GetMusicSampleRate * 10) div 1000);
+    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition - (Integer(FEngine.GetMusicSampleRate) * 10) div 1000);
   MusicWaveDisplayPaintBox.Invalidate;
 end;
 
 procedure TMainForm.SeekForwardActionExecute(Sender: TObject);
 begin
   if FEngine.Running then
-    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition + (FEngine.GetMusicSampleRate * 250) div 1000)
+    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition + (Integer(FEngine.GetMusicSampleRate) * 250) div 1000)
   else
-    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition + (FEngine.GetMusicSampleRate * 10) div 1000);
+    FEngine.SetAudioPosition(FEngine.GetCurrentAudioPosition + (Integer(FEngine.GetMusicSampleRate) * 10) div 1000);
   MusicWaveDisplayPaintBox.Invalidate;
 end;
 
@@ -1089,6 +1081,9 @@ procedure TMainForm.MinifyShaderFromParentActionExecute(Sender: TObject);
 var
   parent_shader, parent_shader_config, minified_shader : String;
 begin
+  parent_shader := '';
+  parent_shader_config := '';
+  minified_shader := '';
   Self.EngineBuildStart(FEngine, 'Minifying shader...');
   try
     FEngine.GetConfigVariableInheritedValueAndConfig(CV_SHADER_FILE, parent_shader, parent_shader_config);
@@ -1430,6 +1425,10 @@ var
   textline, filename : String;
   rownum : Integer;
 begin
+  textline := '';
+  filename := '';
+  rownum := 0;
+  range := Default(TParaRange);
   if ProcessOutputMemo.GetParaRange(ProcessOutputMemo.SelStart, range) then
   begin
     // get text of clicked paragraph, without line breaks

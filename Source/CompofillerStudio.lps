@@ -4,13 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Debug"/>
-    <Units Count="111">
+    <Units Count="113">
       <Unit0>
         <Filename Value="CompofillerStudio.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <CursorPos Y="33"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="39"/>
+        <CursorPos Y="87"/>
         <UsageCount Value="202"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -20,8 +20,9 @@
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="861"/>
-        <CursorPos X="33" Y="869"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="164"/>
+        <CursorPos X="21" Y="180"/>
         <UsageCount Value="202"/>
         <Bookmarks Count="4">
           <Item0 Y="385" ID="8"/>
@@ -51,8 +52,8 @@
       <Unit4>
         <Filename Value="UBaseDLL.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
-        <CursorPos X="33" Y="12"/>
+        <EditorIndex Value="8"/>
+        <CursorPos X="12" Y="12"/>
         <UsageCount Value="202"/>
         <Loaded Value="True"/>
       </Unit4>
@@ -79,9 +80,9 @@
       <Unit7>
         <Filename Value="URunThread.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="266"/>
-        <CursorPos Y="275"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="141"/>
+        <CursorPos X="93" Y="148"/>
         <ExtraEditorCount Value="1"/>
         <ExtraEditor1>
           <EditorIndex Value="-1"/>
@@ -93,14 +94,16 @@
           <Item0 Y="567" ID="7"/>
           <Item1 X="42" Y="617" ID="2"/>
         </Bookmarks>
+        <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="UThreadCommand.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="333"/>
-        <CursorPos Y="369"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="261"/>
+        <CursorPos X="3" Y="278"/>
         <UsageCount Value="201"/>
+        <Loaded Value="True"/>
       </Unit8>
       <Unit9>
         <Filename Value="UWaveformZoomDisplay.pas"/>
@@ -128,10 +131,11 @@
       <Unit12>
         <Filename Value="UScriptRunner.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="91"/>
-        <CursorPos X="26" Y="108"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="446"/>
+        <CursorPos X="27" Y="462"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit12>
       <Unit13>
         <Filename Value="UVariableNames.pas"/>
@@ -880,14 +884,31 @@
       </Unit109>
       <Unit110>
         <Filename Value="C:\development\lazarus\fpc\3.2.2\source\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="764"/>
         <CursorPos X="14" Y="778"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
       </Unit110>
+      <Unit111>
+        <Filename Value="C:\development\lazarus\packager\registration\lazaruspackageintf.pas"/>
+        <UnitName Value="LazarusPackageIntf"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="101"/>
+        <CursorPos X="13" Y="118"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit111>
+      <Unit112>
+        <Filename Value="C:\development\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="993"/>
+        <CursorPos Y="1010"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit112>
     </Units>
-    <JumpHistory Count="14" HistoryIndex="13">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="UMainForm.pas"/>
         <Caret Line="871" Column="9" TopLine="856"/>
@@ -944,6 +965,66 @@
         <Filename Value="UMainForm.pas"/>
         <Caret Line="869" Column="33" TopLine="861"/>
       </Position14>
+      <Position15>
+        <Filename Value="CompofillerStudio.lpr"/>
+        <Caret Line="3" Column="30"/>
+      </Position15>
+      <Position16>
+        <Filename Value="UMainForm.pas"/>
+        <Caret Line="171" Column="60" TopLine="156"/>
+      </Position16>
+      <Position17>
+        <Filename Value="C:\development\lazarus\packager\registration\lazaruspackageintf.pas"/>
+        <Caret Line="120" Column="19" TopLine="101"/>
+      </Position17>
+      <Position18>
+        <Filename Value="C:\development\lazarus\packager\registration\lazaruspackageintf.pas"/>
+        <Caret Line="118" Column="13" TopLine="101"/>
+      </Position18>
+      <Position19>
+        <Filename Value="C:\development\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
+        <Caret Line="930" TopLine="913"/>
+      </Position19>
+      <Position20>
+        <Filename Value="C:\development\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
+        <Caret Line="945" TopLine="928"/>
+      </Position20>
+      <Position21>
+        <Filename Value="C:\development\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
+        <Caret Line="1010" TopLine="993"/>
+      </Position21>
+      <Position22>
+        <Filename Value="UScriptRunner.pas"/>
+        <Caret Line="462" Column="27" TopLine="445"/>
+      </Position22>
+      <Position23>
+        <Filename Value="UThreadCommand.pas"/>
+        <Caret Line="278" Column="3" TopLine="261"/>
+      </Position23>
+      <Position24>
+        <Filename Value="URunThread.pas"/>
+        <Caret Line="277" Column="3" TopLine="260"/>
+      </Position24>
+      <Position25>
+        <Filename Value="CompofillerStudio.lpr"/>
+        <Caret Line="87" TopLine="55"/>
+      </Position25>
+      <Position26>
+        <Filename Value="UScriptRunner.pas"/>
+        <Caret Line="462" Column="27" TopLine="446"/>
+      </Position26>
+      <Position27>
+        <Filename Value="URunThread.pas"/>
+        <Caret Line="891" Column="16" TopLine="874"/>
+      </Position27>
+      <Position28>
+        <Filename Value="URunThread.pas"/>
+        <Caret Line="148" Column="93" TopLine="141"/>
+      </Position28>
+      <Position29>
+        <Filename Value="UMainForm.pas"/>
+        <Caret Line="179" Column="38" TopLine="163"/>
+      </Position29>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

@@ -424,21 +424,7 @@ procedure TWaveformZoomDisplay.DrawWaveformBitmap(ACanvas : TCanvas; const ADest
 const
   NUM_SAMPLES_PER_X_POSITION = 32;
 
-  MAJOR_TICK_HEIGHT = 7;
-  MINOR_TICK_HEIGHT = 4;
-  MAJOR_TICK_COLOR = $546480;
-  MINOR_TICK_COLOR = $344860;
-  RULER_BACKGROUND_COLOR = $101620;
-  RULER_LOOP_BACKGROUND_COLOR = $602040;
-
-  RULER2_MAJOR_TICK_HEIGHT = 6;
-  RULER2_MINOR_TICK_HEIGHT = 3;
-  RULER2_MAJOR_TICK_COLOR = $746480;
-  RULER2_MINOR_TICK_COLOR = $404850;
-  RULER2_BACKGROUND_COLOR = $281618;
-
 var
-  display_start_time, display_end_time : Integer;
   i, pix_idx, x, audiopos, buffer_length, current_play_position, display_position : Integer;
   sampleval_l, sampleval_r : SmallInt;
 
@@ -460,9 +446,6 @@ begin
   if (buffer_length = 0) then Exit;
   audio_buffer := FAudioBuffer; // FEngine.FullAudioBuffer;
 //  if (audio_buffer = nil) then Exit;
-
-  display_start_time := 0;
-  display_end_time := (buffer_length div 2) - 1;
 
   sampleval_l := 0;
   sampleval_r := 0;
@@ -566,7 +549,6 @@ var
   rx0, rx1, rx2, rx3 : Integer;
   xtime,
   prevtickxtime : Integer;
-  ruler2_prevtickxtime : Integer;
   t : String;
 
 begin
@@ -611,7 +593,6 @@ begin
   display_end_time := (buffer_length div 2) - 1;
 
   prevtickxtime := - 1;
-  ruler2_prevtickxtime := - 1;
 
   for x := 0 to (Self.Width - 1) do
   begin

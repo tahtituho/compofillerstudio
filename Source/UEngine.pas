@@ -647,7 +647,6 @@ end;
 procedure TEngine.SetVariableValueInConfig(AConfigFile, AVariableName, AVariableValue : String);
 var
   config : TConfig;
-  i : Integer;
 begin
   config := TConfig.Create;
   try
@@ -677,9 +676,10 @@ end;
 function TEngine.GetEffectiveVariableValueInConfig(AConfigFile, AVariableName : String) : String;
 var
   config : TConfig;
-  i : Integer;
   dummy : String;
 begin
+  Result := '';
+  dummy := '';
   config := TConfig.Create;
   try
     Self.SetUpScriptObject(config);
@@ -693,9 +693,10 @@ end;
 function TEngine.GetVariableValueInConfig_NO_INCLUDE(AConfigFile, AVariableName : String) : String;
 var
   config : TConfig;
-  i : Integer;
   c : String;
 begin
+  Result := '';
+  c := '';
   config := TConfig.Create;
   try
     Self.SetUpScriptObject(config);
@@ -711,7 +712,6 @@ end;
 
 procedure TEngine.GetConfigFileList(AList : TStringList);
 var
-  i : LongInt;
   info : TSearchRec;
 begin
   try
@@ -735,6 +735,7 @@ var
   new_time_uniform_name, new_resolution_uniform_name, new_texts_uniform_name
     : String;
 begin
+  dummy := '';
   sl := TStringList.Create;
   new_variable_names := nil;
   try
@@ -783,7 +784,6 @@ end;
 procedure GetNewTempProjNameAndDir(APrefix : String; APostFix : String; var ADir, AProjName : String);
 var
   tempdir : String;
-  newdirname : String;
   i : Integer;
 begin
   tempdir := GetTempDir(false); // false : user-local temp dir
@@ -805,6 +805,8 @@ var
   dstdir, srcdir, projname : String;
 begin
   Result := false;
+  dstdir := '';
+  projname := '';
 
   AddLogMessage('New project');
 
@@ -836,6 +838,7 @@ var
   i : Integer;
   c : Char;
 begin
+  Result := '';
   for i := 1 to Length(AName) do
   begin
     c := AName[i];
@@ -909,6 +912,8 @@ var
   sl : TStringList;
   plain_glsl_shader : String;
 begin
+  Result := false;
+  plain_glsl_shader := '';
   builder := TBuilder.Create;
   try
     if AnsiLowerCase(ExtractFileExt(ASourceShader)) = '.h' then
@@ -938,6 +943,9 @@ var
   project_file : TConfig;
   s, f : String;
 begin
+  Result := '';
+  s := '';
+  f := '';
   project_file := TConfig.Create;
   try
     project_file.WorkDirectory := Self.FProjectDirectory;
@@ -987,6 +995,8 @@ var
   config : TConfig;
   dummy : String;
 begin
+  Result := '';
+  dummy := '';
   config := TConfig.Create;
   try
     Self.SetUpScriptObject(config);
@@ -1001,6 +1011,8 @@ function TEngine.GetConfigNameOfEffectiveValueForVariable(const AVariableName: S
 var
   dummy_effective_value : String;
 begin
+  Result := '';
+  dummy_effective_value := '';
   GetEffectiveVariableValueInActiveConfigEx(AVariableName, dummy_effective_value, Result);
 end;
 
@@ -1013,6 +1025,8 @@ function TEngine.ConfigVariableInheritedValue(AVariableName: String): String;
 var
   dummy : String;
 begin
+  Result := '';
+  dummy := '';
   // BUGI! Tämä ei itse asiassa palauta parent-arvoa vaan "kantaisän" eli
   // IHAN ENSIMMÄISEN mitä vastaan tulee. :/
   GetConfigVariableInheritedValueAndConfig(AVariableName, Result, dummy);
@@ -1023,6 +1037,8 @@ var
   config : TConfig;
   dummy, dummy2 : String;
 begin
+  dummy := '';
+  dummy2 := '';
   config := TConfig.Create;
   try
     Self.SetUpScriptObject(config);
@@ -1145,7 +1161,7 @@ begin
     Exit;
 
   if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdStopPlaying, nil)) then Exit;
-  if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(APosition))) then Exit;
+  if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(PtrInt(APosition)))) then Exit;
   if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdStartPlaying, nil)) then Exit;
 end;
 
@@ -1155,7 +1171,7 @@ begin
     Exit;
 
   if FRunThread <> nil then
-    if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(APosition))) then Exit;
+    if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(PtrInt(APosition)))) then Exit;
 end;
 
 function TEngine.ConvertMusicalTimeToAudioPosition(AMusicalTime: Single): Integer;
@@ -1185,7 +1201,7 @@ begin
   FLoopStartMusicalTime:=AValue;
   FLoopStartAudioPosition := ConvertMusicalTimeToAudioPosition(FLoopStartMusicalTime);
   if FRunThread <> nil then
-    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopStartAudioPosition, Pointer(FLoopStartAudioPosition)));
+    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopStartAudioPosition, Pointer(PtrInt(FLoopStartAudioPosition))));
 end;
 
 function TEngine.GetLoopEndAudioPosition: Integer;
@@ -1205,7 +1221,7 @@ begin
   FLoopEndMusicalTime:=AValue;
   FLoopEndAudioPosition := ConvertMusicalTimeToAudioPosition(FLoopEndMusicalTime);
   if FRunThread <> nil then
-    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopEndAudioPosition, Pointer(FLoopEndAudioPosition)));
+    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopEndAudioPosition, Pointer(PtrInt(FLoopEndAudioPosition))));
 end;
 
 
@@ -1237,17 +1253,25 @@ begin
   FLoopEnabled := AValue;
 
   if FRunThread <> nil then
-    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopEnabled, Pointer(Integer(FLoopEnabled))));
+    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetLoopEnabled, Pointer(PtrInt(Ord(FLoopEnabled)))));
   // If we're not running, there's no run thread to notify.
 end;
 
 
 function TEngine.GetAllocatedAudioLengthInMonoSamples: Cardinal;
+var
+  AudioLength: QWord;
 begin
   if (FAudioDLL = nil) or not (FAudioDLL.Loaded) then
     Result := 0
   else
-    Result := FAudioDLL.GetMusicLengthSamples() * 2 + FAudioDelayLength * 2;
+  begin
+    AudioLength := QWord(FAudioDLL.GetMusicLengthSamples()) * 2 +
+      QWord(FAudioDelayLength) * 2;
+    if AudioLength > High(Cardinal) then
+      raise ERangeError.Create('Audio length exceeds the supported range.');
+    Result := Cardinal(AudioLength);
+  end;
 end;
 
 function TEngine.GetCurrentAudioPosition: Integer;
@@ -1295,6 +1319,7 @@ end;
 procedure TEngine.Play(AStartTime : Integer);
 var
   command_result : TCommandResultRec;
+  audio_buffer_samples : QWord;
 begin
   try
     RefreshShaderFileName;
@@ -1306,14 +1331,17 @@ begin
       Exit;
     end;
 
+    audio_buffer_samples := (QWord(Self.GetAllocatedAudioLengthInMonoSamples()) + 1) div 2;
     if (FAudioBuffer <> nil)
-    and (((Self.GetAllocatedAudioLengthInMonoSamples() + 1) div 2) * 4 > FAudioBufferAllocatedLengthBytes)
+    and (audio_buffer_samples * 4 > QWord(FAudioBufferAllocatedLengthBytes))
     then // if the audio compiled in the DLL is too long to fit the currently allocated buffer, free the old buffer
       FreeAudioBuffer;
 
     if FAudioBuffer = nil then
     begin
-      FAudioBufferLengthSamples := ((Self.GetAllocatedAudioLengthInMonoSamples() + 1) div 2) ;
+      if audio_buffer_samples > QWord(High(Integer) div 4) then
+        raise ERangeError.Create('Audio buffer exceeds the supported size.');
+      FAudioBufferLengthSamples := Integer(audio_buffer_samples);
       FAudioBufferAllocatedLengthBytes := FAudioBufferLengthSamples * 4;
       GetMem(FAudioBuffer, FAudioBufferAllocatedLengthBytes);
       FillChar(FAudioBuffer^, FAudioBufferAllocatedLengthBytes, 0);
@@ -1361,7 +1389,7 @@ begin
     else
       HighlightShaderErrors(FShaderSourceFileName, ''); // remove error highlights
 
-    if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(AStartTime))) then
+    if not CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetTime, Pointer(PtrInt(AStartTime)))) then
     begin
       AddLogMessage('SetTime failed badly.');
       Exit;
@@ -1400,14 +1428,16 @@ end; // TEngine.Play
 
 function TEngine.DrawOneFrameToBitmap(ABitmap : Graphics.TBitmap) : Boolean;
 begin
+  Result := false;
   if RunThreadIsRunning then
-    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdCopyFrameToBitmap, ABitmap));
+    Result := CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdCopyFrameToBitmap, ABitmap));
 end;
 
 function TEngine.DrawTextsBitmapToPaintBox(ATarget: TPaintBox): Boolean;
 begin
+  Result := false;
   if RunThreadIsRunning then
-    CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdCopyTextsBitmapToPaintBox, Pointer(ATarget)));
+    Result := CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdCopyTextsBitmapToPaintBox, ATarget));
 end;
 
 
@@ -1517,7 +1547,7 @@ begin
     FShaderSourceFileAge := fage;
     if (FRunThread <> nil) and (FRunThreadCommandProxy <> nil) then
     begin
-      FillChar(reload_result, SizeOf(reload_result), 0);
+      reload_result := Default(TCommandResultRec);
       runparams.ShaderFileName := Self.FShaderSourceFileName;
       CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetRunParams, @runparams));
       CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdReloadShader, @reload_result));

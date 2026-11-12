@@ -42,7 +42,6 @@ interface
 
 uses
   Classes, SysUtils,
-  Contnrs,
   Windows;
 
 const
@@ -275,8 +274,6 @@ begin
 end;
 
 procedure TThreadCommandProxy.MarkThreadAsCrashed(ACrashInfo : String);
-var
-  wait_result : DWORD; // Windows.TWait
 begin
   if FBatchMode then
   begin
@@ -285,7 +282,7 @@ begin
   end
   else
   begin
-    wait_result := Windows.WaitForSingleObject(FQueueMutex, COMMAND_QUEUE_TIMEOUT_MILLISECONDS);
+    Windows.WaitForSingleObject(FQueueMutex, COMMAND_QUEUE_TIMEOUT_MILLISECONDS);
     // Regardless of whether the wait timed out, we just set the thread crashed flag.
     // Something went wrong anyway.
     FThreadCrashed := true;

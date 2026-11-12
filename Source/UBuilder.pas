@@ -10,7 +10,7 @@ unit UBuilder;
 interface
 
 uses
-  Classes, SysUtils, Windows,
+  Classes, SysUtils,
   UScriptRunner;
 
 
@@ -36,30 +36,14 @@ type
 
 implementation
 
-uses
-  strutils;
-
 // Builds target ATargetName, using command ATargetCommand
 function TBuilder.HandleBuildTarget(AScriptFileName, ATargetName, ATargetCommand : String) : Boolean;
 var
-//  old_target_age : LongInt;
-  target_noquotes : String;
   exe, params : String;
 begin
   Result := false;
-
-  target_noquotes := RemoveQuotes(ATargetName);
-
-{  if FileExists(target_noquotes) then
-    old_target_age := FileAge(target_noquotes)
-  else
-    old_target_age := -1;}
-
-  {and not DeleteFile(PChar(target_noquotes)) then
-  begin
-    SetError(Format('Cannot delete %s, error code %d', [target_noquotes, Windows.GetLastError()]));
-    Exit;
-  end;}
+  exe := '';
+  params := '';
 
   if UScriptRunner.SplitCommandLine(ATargetCommand, exe, params) then
     Exec(exe, params)
@@ -68,12 +52,6 @@ begin
     SetError('Could not split ' + ATargetCommand + ' to command/executable and its parameters.');
     Exit;
   end;
-
-{  if not FileExists(RemoveQuotes(target_noquotes)) then
-  begin
-    SetError('Could not build ' + target_noquotes);
-    Exit;
-  end; }
 
   Result := true;
   SetError('');

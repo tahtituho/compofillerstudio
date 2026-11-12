@@ -227,7 +227,7 @@ var
   timing_time_part_1, timing_time_part_2, timing_time_part_3,
   timing_string_part_1, timing_string_part_2 : String;
 begin
-  FillChar(Result, SizeOf(Result), 0);
+  Result := Default(TTimingsAndTextsRowRec);
   trimmed := Trim(ALine);
   if Length(trimmed) < 10 then
     raise Exception.Create('Invalid timing line ' + ALine);
@@ -295,8 +295,10 @@ function ConvertTimingRecToAsmLine(ARec : TTimingsAndTextsRowRec; AStrings : TSt
 var
   timesum : Single;
   string_name : String;
+  format_settings : TFormatSettings;
 begin
-  DecimalSeparator := '.';
+  format_settings := DefaultFormatSettings;
+  format_settings.DecimalSeparator := '.';
   if ARec.GenerateData then
     Result := ''
   else
@@ -305,7 +307,7 @@ begin
   string_name := FindStringsNameForValue(AStrings, ARec.Text);
   Result := Result +
     DEFINE_TIMING_TAG + ' '
-     + TIMING_TIME_TAG + '(' + IntToStr(Trunc(Int(timesum))) + ',' + FloatToStrF(Frac(timesum), ffFixed, 9, 5) + ',' + IntToStr(Trunc(timesum * ATimeDivider)) + ') '
+     + TIMING_TIME_TAG + '(' + IntToStr(Trunc(Int(timesum))) + ',' + FloatToStrF(Frac(timesum), ffFixed, 9, 5, format_settings) + ',' + IntToStr(Trunc(timesum * ATimeDivider)) + ') '
      + TIMING_ALIAS_TAG + '(''' + ARec.TimeAliasMacro + ''') '
      + TIMING_CUSTOM_TAG + '(' + IntToStr(ARec.CustomUniformValue) + ') '
      + TIMING_STRING_TAG + '(' + IntToStr(Integer(ARec.KeepPrevText)) + ',' + string_name + ') '

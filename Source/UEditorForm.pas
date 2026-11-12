@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynHighlighterCpp, SynEdit, Forms, Controls,
   Graphics, Dialogs, StdCtrls, ExtCtrls, ActnList, UPreprocessShader,
-  SynEditMarkupSpecialLine, SynEditKeyCmds, RichMemo, LCLType;
+  SynEditKeyCmds, RichMemo, LCLType;
 
 type
 
@@ -346,6 +346,7 @@ var
   sl, stringstoadd : TStringList;
   c : TColor;
 begin
+  s := '';
   sl := TStringList.Create;
   stringstoadd := TStringList.Create;
   try

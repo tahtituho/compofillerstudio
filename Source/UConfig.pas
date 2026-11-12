@@ -125,6 +125,7 @@ end;
 function TConfig.HandleBuildTarget(AScriptFileName, ATargetName, ATargetCommand : String) : Boolean;
 begin
   // do nothing
+  Result := false;
 end;
 
 function TConfig.HandleVariable(const AScriptFileName : String; var AVariableName, AVariableValue : String; var AWhatToDoWithThisVariable : TThingsThatCanBeDoneToAVariableInAVariableHandlerMethod) : Boolean;
@@ -176,6 +177,8 @@ procedure TConfig.GetVariableValue(const AVariableName : String; var AFoundValue
 var
   dummy, dummy2 : String;
 begin
+  dummy := '';
+  dummy2 := '';
   GetVariableValueAndItsInheritedValue(AVariableName, AFoundValue, AFoundInScript, dummy, dummy2, ARunAllIncludedScriptsCompletelyToGetFinalEffectiveValue);
 end;
 

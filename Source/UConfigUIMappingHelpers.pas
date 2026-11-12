@@ -61,6 +61,8 @@ var
   is_inherited_value : Boolean;
 begin
   Result := false;
+  effective_value := '';
+  effective_value_script_name := '';
 
   variable_name := Self.GetConfigVariableNameForControl(AControl);
   if variable_name = '' then

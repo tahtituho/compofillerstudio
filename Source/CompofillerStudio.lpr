@@ -1,6 +1,6 @@
 program CompofillerStudio;
 // Compofiller Studio
-// by Yzi 2017
+// by Yzi 2017, helgrima 2026
 
 {$mode objfpc}{$H+}
 
@@ -10,11 +10,9 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   SysUtils,
-  Forms, UMainForm, UAudioDLL, UVisualsDLL, UEngine, UConfig, URunThread,
-  UThreadCommand, UWaveformZoomDisplay, UBuilder, UScriptRunner,
+  Forms, UMainForm,
   {$ifndef WINDOWS}FakeWindows,{$endif}
-  UVariableNames, UEditorForm, UPreprocessShader, UVisualsForm, UWAVFile,
-  UEditTextForm, UTimingsAndTextsEditorForm, UTimingsAndTextsData, UConfigUIMappingHelpers
+  UEditorForm, UVisualsForm, UEditTextForm, UTimingsAndTextsEditorForm
   ;
 
 type

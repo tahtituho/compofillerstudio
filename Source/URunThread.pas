@@ -97,10 +97,6 @@ type
     FFrameTimestamps : array[0..NUM_TIMESTAMPS_FOR_FRAME_STATS-1] of TFrameTimestampMilliseconds;
 
 
-    // if an  happens in the Execute method, it sets this flag,
-    // tells the command proxy about the crash and exists.
-    FCrashed : Boolean;
-
     function CheckTextBitmapsReady: Boolean;
     function GetLastOperationInfo: String;
     procedure ReloadDLL;
@@ -168,8 +164,6 @@ type
     procedure cmdGetTextsBitmapInfo(AData: Pointer);
 
     procedure cmdGetGLInfo(AData: Pointer);
-    procedure cmdSetLoopParams(AData: Pointer); // <-- this isn't actually used, todo remove
-
     constructor Create
       (ACommandProxy : TRunThreadCommandProxy; AWorkDirectory, AShaderSourceFileName : String;
        AVisualsWindowHandle : HWND; AAudioDLL : TAudioDLL; AAudioBuffer : PByte; AAudioLengthSamples : Integer;
@@ -274,13 +268,11 @@ end;
 procedure TRunThread.Execute;
 var
   audio_position_from_playback_start : Integer;
-  ouch_we_crashed : Boolean;
   e : TObject;
   error_info : String;
 begin
   FLastTextsUpdateTime := -1;
   error_info := '';
-  ouch_we_crashed := false;
   try
     FStarted := true;
     CheckVisualsReady;
@@ -317,7 +309,6 @@ begin
       if e is Exception then
         error_info := error_info + ': ' + Exception(e).Message;
     end;
-    ouch_we_crashed := true;
   end;
 
   try
@@ -377,8 +368,6 @@ begin
 end;
 
 function TRunThread.ReloadShaderFromString(AString : String) : Boolean;
-var
-  l : Int64;
 begin
   Result := false;
   FShaderSourceSize := Length(AString);
@@ -418,6 +407,7 @@ begin
 //        raise Exception.CreateFmt('Shader wtf %s', [full_shader_path]);
 
       sl.LoadFromFile(full_shader_path);
+      shader_string := '';
       UPreprocessShader.ShaderMinifierHToPlainString(sl, shader_string, nil);
       Result := ReloadShaderFromString(shader_string);
     finally
@@ -454,15 +444,10 @@ end;
 
 
 function TRunThread.CheckTextBitmapsReady : Boolean;
-var
-  e : Cardinal;
 begin
   Result := false;
   if FVisualsDLL.InitTextDrawingStuff() = 0 then
-  begin
-    e := Windows.GetLastError;
     Exit;
-  end;
 
   Result := true;
 end;
@@ -643,14 +628,12 @@ end;
 function TRunThread.DrawFrame : Boolean;
 var
   i : Integer;
-  p : PChar;
 begin
   if FTime < FLastTextsUpdateTime then
     FVisualsDLL.ResetTimingsCursorToStart();
   FVisualsDLL.UpdateTimingsCursor(FTime);
   FLastTextsUpdateTime := FTime;
 
-  p := FVisualsDLL.GetTextPtr();
   FVisualsDLL.DrawTextBitmap();
 
   FLastFrameResult := FVisualsDLL.DrawFrame(FTime);
@@ -763,7 +746,6 @@ procedure TRunThread.cmdCopyFrameToBitmap(AData: Pointer);
 var
   bm : Graphics.TBitmap;
   pbuf : PByte;
-  psrc, pdst : PCardinal;
   w, h, y, bmsizebytes : Integer;
 begin
   if AData = nil then Exit;
@@ -778,7 +760,11 @@ begin
 
   for y := 0 to h-1 do
   begin
+    // This renderer targets the project's Win32-only bitmap format.
+    {$PUSH}
+    {$WARN 5044 OFF}
     CopyRGBtoBGRSwapped(Pointer(pbuf + y * w * 4), bm.ScanLine[h-y-1], w);
+    {$POP}
   end;
 
   FreeMem(pbuf);
@@ -795,7 +781,6 @@ var
   texts_bmiptr : PBITMAPINFO;
   texts_bitmap_bits : Pointer;
   temp_bitmapinfo : BITMAPINFO;
-  res : Cardinal;
 
 begin
   if AData = nil then Exit;
@@ -814,7 +799,7 @@ begin
     dest_dc := dest_paintbox.Canvas.Handle; // GetDC(dest_window_handle);
     dest_rect := dest_paintbox.BoundsRect;
 
-    res := StretchDIBits(
+    StretchDIBits(
       dest_dc,
       0, // dest_rect.Left   // for some reason, (0,0) must be given as the top-left... maybe there's a coordinate translation somewhere
       0, // dest_rect.Top,
@@ -903,14 +888,7 @@ end;
 
 procedure TRunThread.cmdSetTime(AData: Pointer);
 begin
-  Self.SetTime(Integer(AData)); // SetTime clips the value to song length
-end;
-
-procedure TRunThread.cmdSetLoopParams(AData: Pointer);
-var
-  res : PCommandResultRec;
-begin
-  res := PCommandResultRec(AData);
+  Self.SetTime(PtrInt(AData)); // SetTime clips the value to song length
 end;
 
 procedure TRunThread.cmdGetTime(AData: Pointer);
@@ -921,7 +899,7 @@ end;
 
 procedure TRunThread.cmdSetLoopEnabled(AData: Pointer);
 begin
-  FLoopEnabled := Boolean(AData);
+  FLoopEnabled := PtrUInt(AData) <> 0;
   if FPlaying then
   begin
     SetPlaying(false);
@@ -931,7 +909,7 @@ end;
 
 procedure TRunThread.cmdSetLoopStartAudioPosition(AData: Pointer);
 begin
-  FLoopStartAudioPosition := Integer(AData);
+  FLoopStartAudioPosition := PtrInt(AData);
   if FPlaying then
   begin
     SetPlaying(false);
@@ -941,7 +919,7 @@ end;
 
 procedure TRunThread.cmdSetLoopEndAudioPosition(AData: Pointer);
 begin
-  FLoopEndAudioPosition := Integer(AData);
+  FLoopEndAudioPosition := PtrInt(AData);
   if FPlaying then
   begin
     SetPlaying(false);
