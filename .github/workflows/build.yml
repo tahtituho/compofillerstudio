@@ -49,7 +49,7 @@ jobs:
             }
 
             $installer = Join-Path $env:RUNNER_TEMP $item.Name
-            Invoke-WebRequest -Uri $downloadUrl -OutFile $installer -ErrorAction Stop
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $installer -TimeoutSec 600 -ErrorAction Stop
             $actualSha256 = (Get-FileHash -Path $installer -Algorithm SHA256).Hash
             if ($actualSha256 -ne $item.Sha256) {
               throw "SHA-256 mismatch for $($item.Name): $actualSha256"
