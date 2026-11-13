@@ -98,3 +98,25 @@ jobs:
 
       - name: Build Release (Win32/i386)
         run: lazbuild -B --build-mode=Release --cpu=i386 --os=win32 Source\CompofillerStudio.lpi
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $items = @('CompofillerStudio.exe', 'Doc', 'Libs', 'Templates', 'Tools')
+          foreach ($item in $items) {
+            if (-not (Test-Path -LiteralPath $item)) {
+              throw "Required release item not found: $item"
+            }
+          }
+
+          $releaseDirectory = Join-Path $env:RUNNER_TEMP 'release'
+          New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
+          $archive = Join-Path $releaseDirectory 'CompofillerStudio.zip'
+          Compress-Archive -Path $items -DestinationPath $archive -CompressionLevel Optimal
+
+      - name: Upload release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CompofillerStudio
+          path: ${{ runner.temp }}/release/CompofillerStudio.zip
+          if-no-files-found: error
