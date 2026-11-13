@@ -67,8 +67,10 @@ begin
 end;
 
 begin
+  {$IFDEF HEAPTRC_ENABLED}
   SetHeapTraceOutput(IncludeTrailingPathDelimiter(GetTempDir(False)) +
     'CompofillerStudio-heaptrc.log');
+  {$ENDIF}
   ApplicationExceptionLogger := TApplicationExceptionLogger.Create;
   Application.OnException := @ApplicationExceptionLogger.HandleException;
   RequireDerivedFormResource:=True;

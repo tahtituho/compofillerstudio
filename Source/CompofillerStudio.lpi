@@ -45,6 +45,9 @@
             </Checks>
             <VerifyObjMethodCallValidity Value="True"/>
           </CodeGeneration>
+          <Other>
+            <CustomOptions Value="-dHEAPTRC_ENABLED"/>
+          </Other>
           <Linking>
             <Debugging>
               <DebugInfoType Value="dsDwarf3"/>
