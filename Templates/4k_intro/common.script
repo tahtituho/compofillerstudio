@@ -7,7 +7,7 @@
 # Note about spaces in path names:
 #
 #   Any file name/path that includes $(PROGRAM_DIR) must be enclosed in quotes, like 
-#   "$(PROGRAM_DIR)\Tools\Crinkler\crinkler.exe" or "$(PROGRAM_DIR)\Libs", because 
+#   "$(PROGRAM_DIR)\Tools\Crinkler\Crinkler.exe" or "$(PROGRAM_DIR)\Libs", because 
 #   PROGRAM_DIR might contain spaces.
 #  
 #   Paths that are relative to the project directory, don't have to be enclosed in quotes,
@@ -88,7 +88,7 @@ DEBUG_LINKER_VISUALS_LIBS_PARAMS=$(DEBUG_LINKER_COMMON_LIBS_PARAMS) -l gdi32 -l 
 ifeq ($(EXE_LINKER_PROGRAM),Crinkler)
 # Crinkler settings
 # Linker for building standalone EXE files for running
-FINAL_LINKER_EXE="$(PROGRAM_DIR)\Tools\Crinkler\crinkler.exe"
+FINAL_LINKER_EXE="$(PROGRAM_DIR)\Tools\Crinkler\Crinkler.exe"
 FINAL_LINKER_OPTS=/SUBSYSTEM:WINDOWS /ENTRY:t /COMPMODE:SLOW /HASHSIZE:200 /HASHTRIES:50 /ORDERTRIES:$(CRINKLER_ORDERTRIES) \
     /UNSAFEIMPORT /LIBPATH:$(LIB_PATH) /REPORT:crinkler_report.html /PROGRESSGUI
 FINAL_LINKER_OUT_OPT=/OUT:
