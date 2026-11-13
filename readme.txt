@@ -35,9 +35,9 @@ Resources folder:
 * default_music: Ableton Live project and 4klang patch bank for the default music (by Yzi)
 
 Tools folder: 
-* Shader Minifier 
-	by Laurent Le Brun (LLB/Ctrl-Alt-Test)
-* Crinkler compressing linker 
+* Shader Minifier 1.6.1
+	by Laurent Le Brun (LLB/Ctrl-Alt-Test) https://github.com/laurentlb/shader-minifier
+* Crinkler compressing linker 3.0b https://github.com/runestubbe/Crinkler
 	by Rune L. H. Stubbe (Mentor/TBC) and Aske Simon Christensen (Blueberry/Loonies)
 * NASM assembler
 * GNU ld linker
