@@ -22,19 +22,34 @@ jobs:
           $installers = @(
             @{
               Name = 'lazarus-4.8-fpc-3.2.2-win64.exe'
-              Url = 'https://downloads.sourceforge.net/project/lazarus/Lazarus%20Windows%2064%20bits/Lazarus%204.8/lazarus-4.8-fpc-3.2.2-win64.exe'
               Sha256 = 'ED25EE171D55E23CF14E0633159FDD2325EFBA56E186F8AB817AD3BF97D267D7'
             },
             @{
               Name = 'lazarus-4.8-fpc-3.2.2-cross-i386-win32-win64.exe'
-              Url = 'https://downloads.sourceforge.net/project/lazarus/Lazarus%20Windows%2064%20bits/Lazarus%204.8/lazarus-4.8-fpc-3.2.2-cross-i386-win32-win64.exe'
               Sha256 = 'F734F78A5D608CB846B711AF73F63B3AE956B4D703160D0B9A327BF191639F2A'
             }
           )
 
           foreach ($item in $installers) {
+            $relativePath = "Lazarus Windows 64 bits/Lazarus 4.8/$($item.Name)"
+            $mirrorPageUrl = 'https://sourceforge.net/settings/mirror_choices?projectname=lazarus&filename=' +
+              [uri]::EscapeDataString($relativePath) + '&selected='
+            $mirrorPage = Invoke-WebRequest -Uri $mirrorPageUrl -ErrorAction Stop
+            $linkMatch = [regex]::Match(
+              $mirrorPage.Content,
+              '(?is)Please use this.*?<a[^>]+href="([^"]+)"'
+            )
+            if (-not $linkMatch.Success) {
+              throw "Could not find a direct download link for $($item.Name)."
+            }
+
+            $downloadUrl = [uri][System.Net.WebUtility]::HtmlDecode($linkMatch.Groups[1].Value)
+            if ($downloadUrl.Scheme -ne 'https' -or $downloadUrl.Host -ne 'downloads.sourceforge.net') {
+              throw "Unexpected download URL for $($item.Name): $downloadUrl"
+            }
+
             $installer = Join-Path $env:RUNNER_TEMP $item.Name
-            Invoke-WebRequest -Uri $item.Url -OutFile $installer -ErrorAction Stop
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $installer -ErrorAction Stop
             $actualSha256 = (Get-FileHash -Path $installer -Algorithm SHA256).Hash
             if ($actualSha256 -ne $item.Sha256) {
               throw "SHA-256 mismatch for $($item.Name): $actualSha256"
