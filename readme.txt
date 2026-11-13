@@ -25,11 +25,11 @@ Compofiller Studio is a bundling of components from several people and projects.
 
 Main folder:
 * Windows "IDE" application and make/build system written in FPC/Lazarus (Object Pascal)
-	by Yrj� Fager (Yzi/Fit)
+	by Yrjö Fager (Yzi/Fit)
 
 Templates folder:
 * x86 intro runtime framework (x86 assembly code) and template build scripts
-	by Yrj� Fager (Yzi/Fit)
+	by Yrjö Fager (Yzi/Fit)
 	
 Resources folder:
 * default_music: Ableton Live project and 4klang patch bank for the default music (by Yzi)
@@ -52,7 +52,7 @@ See each individual folder for licensing information.
 
 == LICENSE FOR PARTS MADE BY YZI ==
 
-Copyright 2018 Yrj� Fager
+Copyright 2018 Yrjö Fager
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,6 +74,8 @@ limitations under the License.
 To BUILD Compofiller Studio from source code, you'll need:
 
 * Lazarus 4.8 https://www.lazarus-ide.org/
+* FPC 3.2.2
 * TRichMemo component, install from Online Package Manager, search for richmemo
+* Set Lazarus to use 32 bit FPC 
 
 

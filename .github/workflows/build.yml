@@ -15,25 +15,67 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Install Lazarus and RichMemo
-        uses: gcarreno/setup-lazarus@v3
-        with:
-          lazarus-version: "3.2"
-          include-packages: "RichMemo"
-
-      - name: Install i386 cross-compiler
+      - name: Install Lazarus 4.8 and i386 cross-compiler
         shell: pwsh
         run: |
-          $installer = Join-Path $env:RUNNER_TEMP 'fpc-cross-i386.exe'
-          $url = 'https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/Lazarus%203.2/lazarus-3.2-fpc-3.2.2-cross-i386-win32-win64.exe/download'
-          Invoke-WebRequest -Uri $url -OutFile $installer
-
           $lazarusDir = Join-Path $env:RUNNER_TEMP 'lazarus'
-          $process = Start-Process -FilePath $installer `
-            -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=$lazarusDir") `
-            -Wait -PassThru
-          if ($process.ExitCode -ne 0) {
-            throw "The i386 cross-compiler installer failed with exit code $($process.ExitCode)."
+          $installers = @(
+            @{
+              Name = 'lazarus-4.8-fpc-3.2.2-win64.exe'
+              Url = 'https://downloads.sourceforge.net/project/lazarus/Lazarus%20Windows%2064%20bits/Lazarus%204.8/lazarus-4.8-fpc-3.2.2-win64.exe'
+              Sha256 = 'ED25EE171D55E23CF14E0633159FDD2325EFBA56E186F8AB817AD3BF97D267D7'
+            },
+            @{
+              Name = 'lazarus-4.8-fpc-3.2.2-cross-i386-win32-win64.exe'
+              Url = 'https://downloads.sourceforge.net/project/lazarus/Lazarus%20Windows%2064%20bits/Lazarus%204.8/lazarus-4.8-fpc-3.2.2-cross-i386-win32-win64.exe'
+              Sha256 = 'F734F78A5D608CB846B711AF73F63B3AE956B4D703160D0B9A327BF191639F2A'
+            }
+          )
+
+          foreach ($item in $installers) {
+            $installer = Join-Path $env:RUNNER_TEMP $item.Name
+            Invoke-WebRequest -Uri $item.Url -OutFile $installer -ErrorAction Stop
+            $actualSha256 = (Get-FileHash -Path $installer -Algorithm SHA256).Hash
+            if ($actualSha256 -ne $item.Sha256) {
+              throw "SHA-256 mismatch for $($item.Name): $actualSha256"
+            }
+
+            $process = Start-Process -FilePath $installer `
+              -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/DIR=$lazarusDir") `
+              -Wait -PassThru
+            if ($process.ExitCode -ne 0) {
+              throw "$($item.Name) failed with exit code $($process.ExitCode)."
+            }
+          }
+
+          Add-Content -Path $env:GITHUB_PATH -Value $lazarusDir
+          Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $lazarusDir 'fpc\3.2.2\bin\x86_64-win64')
+          Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $lazarusDir 'fpc\3.2.2\bin\i386-win32')
+
+      - name: Install RichMemo runtime package
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'RichMemo.zip'
+          $packageDirectory = Join-Path $env:RUNNER_TEMP 'RichMemo'
+          Invoke-WebRequest -Uri 'https://packages.lazarus-ide.org/RichMemo.zip' -OutFile $archive -ErrorAction Stop
+          $actualSha256 = (Get-FileHash -Path $archive -Algorithm SHA256).Hash
+          if ($actualSha256 -ne '82004928AD46F994ACDE6EA2B34EF85493D66199F4EF808CA0E9E5D3393AE618') {
+            throw "SHA-256 mismatch for RichMemo.zip: $actualSha256"
+          }
+
+          Expand-Archive -Path $archive -DestinationPath $packageDirectory
+          $package = Join-Path $packageDirectory 'richmemo\richmemopackage.lpk'
+          if (-not (Test-Path $package)) {
+            throw "RichMemo package not found at $package."
+          }
+
+          & lazbuild --add-package-link $package
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not register the RichMemo package (exit code $LASTEXITCODE)."
+          }
+          & lazbuild -B $package
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not build the RichMemo package (exit code $LASTEXITCODE)."
           }
 
       - name: Build Debug (Win32/i386)
