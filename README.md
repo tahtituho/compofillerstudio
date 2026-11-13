@@ -1,4 +1,4 @@
-# Compofiller Studio 1.0 Beta 8
+# Compofiller Studio 1.1.0
 [![Build](https://github.com/tahtituho/compofillerstudio/actions/workflows/build.yml/badge.svg)](https://github.com/tahtituho/compofillerstudio/actions/workflows/build.yml)
 
 "IDE" for making Windows 4k intros  

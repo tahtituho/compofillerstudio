@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Height = 682
   Top = 360
   Width = 770
-  Caption = 'Compofiller Studio v1.1 by Yzi/Fi, helgrima'
+  Caption = 'Compofiller Studio v1.1.0 by Yzi/Fi, helgrima'
   ClientHeight = 682
   ClientWidth = 770
   Constraints.MinHeight = 650
