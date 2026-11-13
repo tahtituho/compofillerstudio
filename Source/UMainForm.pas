@@ -21,7 +21,7 @@ uses
   ;
 
 const
-  MAIN_WINDOW_CAPTION = 'Compofiller Studio v1.1 by Yzi/Fit, helgrima';
+  MAIN_WINDOW_CAPTION = 'Compofiller Studio v1.1.0 by Yzi/Fit, helgrima';
 
 type
 

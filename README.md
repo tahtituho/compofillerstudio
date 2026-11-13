@@ -1,4 +1,4 @@
-# Compofiller Studio 1.0 Beta 8
+# Compofiller Studio 1.1.0
 
 "IDE" for making Windows 4k intros  
 by Yzi, helgrima
