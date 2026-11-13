@@ -1,6 +1,6 @@
 unit UMainForm;
 // Compofiller Studio
-// by Yzi 2018
+// by Yzi, helgrima 2026
 
 {$mode objfpc}{$H+}
 
@@ -21,7 +21,7 @@ uses
   ;
 
 const
-  MAIN_WINDOW_CAPTION = 'Compofiller Studio v1.0 Beta 8 by Yzi/Fit';
+  MAIN_WINDOW_CAPTION = 'Compofiller Studio v1.1 by Yzi/Fit, helgrima';
 
 type
 

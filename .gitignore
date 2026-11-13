@@ -1,5 +1,6 @@
 Source/backup/
 *.o
+*.or
 *.obj
 *.ppu
 *.exe
