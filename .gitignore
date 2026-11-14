@@ -1,4 +1,5 @@
 Source/backup/
+Source/lib/
 *.o
 *.or
 *.obj
