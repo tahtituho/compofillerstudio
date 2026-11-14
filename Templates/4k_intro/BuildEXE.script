@@ -11,8 +11,34 @@ include common.script
 
 TEMP_PROCESSED_SHADER_FILE=__temp_processed_shader.glsl
 
+ifeq ($(MUSIC_SOURCE),4klang)
 4klang.obj: 4klang.asm 4klang.inc
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(FORCED_4KLANG_OPTS) -o $@ $<
+AUDIO_OBJECTS=4klang.obj
+else
+ifeq ($(MUSIC_SOURCE),sointu)
+__sointu_song.asm:
+	$(SOINTU_COMPILER_EXE) -i -arch 386 -os windows -o __sointu_song "$(MUSIC_SOINTU_YAML_FILE)"
+
+sointu_song.obj: __sointu_song.asm
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+sointu_exe_wrapper.obj: sointu_exe_wrapper.asm __sointu_song.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+AUDIO_OBJECTS=sointu_song.obj sointu_exe_wrapper.obj
+else
+ifeq ($(MUSIC_SOURCE),sointu-vsti)
+sointu_vsti_song.obj: $(MUSIC_SOINTU_VSTI_FILE).asm $(MUSIC_SOINTU_VSTI_FILE).inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+sointu_vsti_exe_wrapper.obj: sointu_exe_wrapper.asm $(MUSIC_SOINTU_VSTI_FILE).inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -DSOINTU_INCLUDE_FILE=$(QUOTE)$(MUSIC_SOINTU_VSTI_FILE).inc$(QUOTE) -o $@ $<
+
+AUDIO_OBJECTS=sointu_vsti_song.obj sointu_vsti_exe_wrapper.obj
+endif
+endif
+endif
 
 shader_code.obj: shader_code.asm $(SHADER_FILE)
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) \
@@ -21,5 +47,5 @@ shader_code.obj: shader_code.asm $(SHADER_FILE)
 exemain.obj: exemain.asm
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) -o $@ $<
 
-$(OUTPUT_EXE_NAME): exemain.obj shader_code.obj 4klang.obj
+$(OUTPUT_EXE_NAME): exemain.obj shader_code.obj $(AUDIO_OBJECTS)
 	$(FINAL_LINKER_EXE) $(FINAL_LINKER_OPTS) $(FINAL_LINKER_OUT_OPT)$@ $^ $(FINAL_LINKER_LIBS_PARAMS)

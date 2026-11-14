@@ -119,6 +119,7 @@ var
   old_string : String;
   old_boolean : Boolean;
   s : String;
+  item_index : Integer;
   e : TCustomEdit;
   fne : TFileNameEdit;
   cb : TCheckBox;
@@ -185,7 +186,22 @@ begin
   begin
     cmb := AControl as TCustomComboBox;
     old_string := cmb.Text;
-    if AIsInheritedValue then
+    item_index := cmb.Items.IndexOf(AVariableValue);
+    if (item_index >= 0) or ((AVariableValue = '') and (cmb.Items.Count > 0)) then
+    begin
+      cmb.ItemIndex := item_index;
+      if AIsInheritedValue then
+      begin
+        cmb.Font.Style := [fsItalic];
+        cmb.Color := clBlack;
+      end
+      else
+      begin
+        cmb.Font.Style := [fsBold];
+        cmb.Color := clDefault;
+      end;
+    end
+    else if AIsInheritedValue then
     begin
       cmb.Items.Clear;
       s := AVariableValue + ' (' + AScriptName + ')';

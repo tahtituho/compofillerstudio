@@ -118,15 +118,16 @@ jobs:
             }
           }
 
-          $releaseDirectory = Join-Path $env:RUNNER_TEMP 'release'
-          New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
-          $archive = Join-Path $releaseDirectory "CompofillerStudio-v$version.zip"
-          Compress-Archive -Path $items -DestinationPath $archive -CompressionLevel Optimal
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - name: Upload release package
+      - name: Upload release files
         uses: actions/upload-artifact@v4
         with:
           name: CompofillerStudio-v${{ steps.package-release.outputs.version }}
-          path: ${{ runner.temp }}/release/CompofillerStudio-v${{ steps.package-release.outputs.version }}.zip
+          path: |
+            CompofillerStudio.exe
+            Doc
+            Libs
+            Templates
+            Tools
           if-no-files-found: error

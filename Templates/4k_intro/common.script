@@ -49,16 +49,17 @@ VISUALS_ASM_OPTS=$(VISUALS_USE_TIME_UNIFORM_DEFINE) $(VISUALS_USE_RESOLUTION_UNI
 # this doesn't need to go to the assembler anymore, because the shader goes via PreprocessShader.exe to a hard-coded file name
 #    -DSHADER_FILE=$(QUOTE)$(SHADER_FILE)$(QUOTE) 
 
-
+########## Music things ###########
+# MUSIC_SOURCE=sointu selects a Tracker YAML; sointu-vsti selects generated Sointu assembly/include files.
+# The Sointu VSTi include must declare PCM16 output and have a matching .asm file.
 # We force 16 bit output. This prevents non-working audio and crash, when a 32 bit float format song is given.
 FORCED_4KLANG_OPTS=-DGO4K_USE_16BIT_OUTPUT
 
 
-ASSEMBLER_PROGRAM=yasm
-
 ########### Tools  ###########
 ASSEMBLER_EXE="$(PROGRAM_DIR)\Tools\NASM\nasm.exe"
 ASSEMBLER_OPTS=-f win32 -w-orphan-labels
+SOINTU_COMPILER_EXE="$(PROGRAM_DIR)\Tools\sointu\sointu-compile.exe"
 # You could try this to get debug symbols, but it just doesn't seem to work.
 #ASSEMBLER_OPTS=-w-orphan-labels -f win32 -F cv8 -g
 

@@ -25,29 +25,59 @@ object MainForm: TMainForm
     ClientWidth = 753
     ParentColor = False
     TabOrder = 1
-    object MusicSourceFileNameEdit: TFileNameEdit
-      Left = 16
+    object MusicSource4KlangFileNameEdit: TFileNameEdit
+      Left = 8
       Height = 23
-      Top = 24
-      Width = 90
+      Top = 40
+      Width = 216
+      Filter = '4klang include files (*.inc)|*.inc'
       FilterIndex = 0
+      DefaultExt = '.inc'
       HideDirectories = False
       ButtonWidth = 23
       NumGlyphs = 1
       MaxLength = 0
-      TabOrder = 0
-      TextHint = '4klang.obj file'
+      TabOrder = 9
+      TextHint = '4klang include file'
       Visible = False
-      OnChange = MusicSourceFileNameEditChange
+      OnButtonClick = ProjectFileNameEditButtonClick
+      OnChange = MusicSource4KlangFileNameEditChange
     end
-    object MusicSourceFileNameLabel: TLabel
-      Left = 16
-      Height = 15
-      Top = 4
-      Width = 73
-      Caption = '4klang.inc file'
-      ParentColor = False
+    object MusicSourceSointuTrackerFileNameEdit: TFileNameEdit
+      Left = 8
+      Height = 23
+      Top = 40
+      Width = 216
+      Filter = 'Sointu Tracker files (*.yml)|*.yml'
+      FilterIndex = 0
+      DefaultExt = '.yml'
+      HideDirectories = False
+      ButtonWidth = 23
+      NumGlyphs = 1
+      MaxLength = 0
+      TabOrder = 11
+      TextHint = 'Sointu Tracker YML file'
       Visible = False
+      OnButtonClick = ProjectFileNameEditButtonClick
+      OnChange = MusicSourceSointuTrackerFileNameEditChange
+    end
+    object MusicSourceSointuVstiFileNameEdit: TFileNameEdit
+      Left = 8
+      Height = 23
+      Top = 40
+      Width = 216
+      Filter = 'Sointu VSTi include files (*.inc)|*.inc'
+      FilterIndex = 0
+      DefaultExt = '.inc'
+      HideDirectories = False
+      ButtonWidth = 23
+      NumGlyphs = 1
+      MaxLength = 0
+      TabOrder = 12
+      TextHint = 'Sointu VSTi include file'
+      Visible = False
+      OnButtonClick = ProjectFileNameEditButtonClick
+      OnChange = MusicSourceSointuVstiFileNameEditChange
     end
     object MusicSampleRateEdit: TLabeledEdit
       Left = 350
@@ -55,7 +85,7 @@ object MainForm: TMainForm
       Top = 34
       Width = 69
       Color = clBtnFace
-      EditLabel.Height = 13
+      EditLabel.Height = 21
       EditLabel.Width = 60
       EditLabel.Caption = 'Sample rate'
       EditLabel.ParentColor = False
@@ -65,7 +95,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       ParentFont = False
       ReadOnly = True
-      TabOrder = 3
+      TabOrder = 0
     end
     object MusicBPMEdit: TLabeledEdit
       Left = 350
@@ -73,7 +103,7 @@ object MainForm: TMainForm
       Top = 13
       Width = 69
       Color = clBtnFace
-      EditLabel.Height = 13
+      EditLabel.Height = 21
       EditLabel.Width = 56
       EditLabel.Caption = 'BPM (float)'
       EditLabel.ParentColor = False
@@ -83,7 +113,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       ParentFont = False
       ReadOnly = True
-      TabOrder = 4
+      TabOrder = 1
     end
     object MusicLengthSamplesEdit: TLabeledEdit
       Left = 350
@@ -91,7 +121,7 @@ object MainForm: TMainForm
       Top = 55
       Width = 69
       Color = clBtnFace
-      EditLabel.Height = 13
+      EditLabel.Height = 21
       EditLabel.Width = 86
       EditLabel.Caption = 'Length (samples)'
       EditLabel.ParentColor = False
@@ -101,7 +131,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       ParentFont = False
       ReadOnly = True
-      TabOrder = 5
+      TabOrder = 10
     end
     object TimeDividerEdit: TLabeledEdit
       Left = 634
@@ -109,22 +139,13 @@ object MainForm: TMainForm
       Hint = 'Audio position is divided by the time divider to obtain the time value'
       Top = 48
       Width = 112
-      EditLabel.Height = 15
+      EditLabel.Height = 23
       EditLabel.Width = 66
       EditLabel.Caption = 'Time divider'
       EditLabel.ParentColor = False
       LabelPosition = lpLeft
-      TabOrder = 10
+      TabOrder = 7
       OnChange = TimeDividerEditChange
-    end
-    object OpenMusicSourceButton: TButton
-      Left = 16
-      Height = 24
-      Top = 48
-      Width = 42
-      Action = OpenMusicSourceAction
-      TabOrder = 1
-      Visible = False
     end
     object MusicValuesLabel: TLabel
       Left = 248
@@ -143,19 +164,19 @@ object MainForm: TMainForm
       Font.Height = -11
       ParentFont = False
       ReadOnly = True
-      TabOrder = 6
+      TabOrder = 3
     end
     object MusicBeatsPerBarEdit: TLabeledEdit
       Left = 634
       Height = 23
       Top = 0
       Width = 112
-      EditLabel.Height = 15
+      EditLabel.Height = 23
       EditLabel.Width = 68
       EditLabel.Caption = 'Beats per bar'
       EditLabel.ParentColor = False
       LabelPosition = lpLeft
-      TabOrder = 8
+      TabOrder = 5
       OnChange = MusicBeatsPerBarEditChange
     end
     object TimeBaseComboBox: TComboBox
@@ -165,7 +186,7 @@ object MainForm: TMainForm
       Width = 112
       ItemHeight = 15
       Style = csDropDownList
-      TabOrder = 9
+      TabOrder = 6
       OnChange = TimeBaseComboBoxChange
       OnDropDown = TimeBaseComboBoxDropDown
     end
@@ -180,9 +201,9 @@ object MainForm: TMainForm
       ParentColor = False
     end
     object EditMusicSourceButton: TButton
-      Left = 64
+      Left = 112
       Height = 24
-      Top = 48
+      Top = 40
       Width = 42
       Action = EditMusicSourceAction
       TabOrder = 2
@@ -199,18 +220,33 @@ object MainForm: TMainForm
       EditLabel.ParentColor = False
       EditLabel.ParentFont = False
       EditLabel.Font.Height = -9
-      TabOrder = 7
+      TabOrder = 4
       OnChange = AudioOffsetEditChange
     end
-    object MusicHelpLabel: TLabel
-      Left = 10
-      Height = 63
-      Top = 4
-      Width = 223
-      AutoSize = False
-      Caption = 'To replace the music, copy both your 4klang.inc and 4klang.asm to the project folder. 4klang.asm and 4klang.inc have to be from the SAME VERSION of 4klang.'
-      ParentColor = False
-      WordWrap = True
+    object MusicSourceComboBox: TComboBox
+      Left = 8
+      Height = 21
+      Hint = 'Select music source'
+      Top = 15
+      Width = 216
+      ItemHeight = 15
+      Items.Strings = (
+        '4klang'
+        'sointu'
+        'sointu-vsti'
+      )
+      ReadOnly = True
+      Style = csOwnerDrawVariable
+      TabOrder = 8
+      OnChange = MusicSourceComboBoxChange
+      OnDrawItem = MusicSourceComboBoxDrawItem
+    end
+    object MusicSourceLabel: TLabel
+      Left = 8
+      Height = 15
+      Top = 0
+      Width = 70
+      Caption = 'Music source'
     end
   end
   object ShaderGroupBox: TGroupBox
@@ -235,6 +271,7 @@ object MainForm: TMainForm
       NumGlyphs = 1
       MaxLength = 0
       TabOrder = 0
+      OnButtonClick = ProjectFileNameEditButtonClick
       OnChange = ShaderFileNameEditChange
     end
     object UseTimeUniformCheckBox: TCheckBox
@@ -242,7 +279,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'If you don''t provide a "time" uniform to the shader, then the time is passed in gl_FragColor'
       Top = 27
-      Width = 93
+      Width = 91
       Caption = 'Time uniform'
       TabOrder = 11
       OnChange = UseTimeUniformCheckBoxChange
@@ -252,7 +289,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'If you don''t provide a "resolution" uniform, then you have to hard-code the resolution in the shader code.'
       Top = 27
-      Width = 122
+      Width = 120
       Caption = 'Resolution uniform'
       TabOrder = 9
       OnChange = UseResolutionUniformCheckBoxChange
@@ -358,7 +395,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Copy the frame from the first shader pass to texture and run the shader again with time == 0.0, for post-processing effects'
       Top = 56
-      Width = 66
+      Width = 64
       Caption = '2nd pass'
       TabOrder = 16
       OnChange = TwoPassRenderCheckBoxChange
@@ -368,7 +405,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Copy previous frame to texture, so your shader can do e.g. feedback effects'
       Top = 56
-      Width = 113
+      Width = 111
       Caption = 'Prev. fr. to texture'
       TabOrder = 15
       OnChange = FrameToTextureCheckBoxChange
@@ -378,7 +415,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Generate mipmaps for the textures'
       Top = 56
-      Width = 70
+      Width = 68
       Caption = 'Mipmaps'
       TabOrder = 14
       OnChange = MipMapCheckBoxChange
@@ -388,7 +425,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Pass the time as -time for the second-pass shader run. If this is unchecked, then the time uniform is constant 0.0 for the second pass, so you cannot do time-dependent post-processing filters'
       Top = 56
-      Width = 138
+      Width = 136
       Caption = 'Neg. time on 2nd pass'
       TabOrder = 17
       OnChange = NegateTimeOnSecondPassCheckBoxChange
@@ -398,7 +435,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Draw texts to a texture'
       Top = 0
-      Width = 66
+      Width = 64
       Caption = 'Use texts'
       TabOrder = 6
       OnChange = UseTextsCheckBoxChange
@@ -408,7 +445,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Provide a custom value from the Timings and Texts list to the shader in a uniform'
       Top = 58
-      Width = 108
+      Width = 106
       Caption = 'Custom uniform'
       TabOrder = 7
       Visible = False
@@ -440,7 +477,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Set the texts texture unit number to a uniform'
       Top = 0
-      Width = 93
+      Width = 91
       Caption = 'Texts uniform'
       TabOrder = 19
       OnChange = UseTextsUniformCheckBoxChange
@@ -786,7 +823,7 @@ object MainForm: TMainForm
       Left = 432
       Height = 19
       Top = 96
-      Width = 47
+      Width = 45
       Caption = 'Loop'
       TabOrder = 8
       OnChange = LoopCheckBoxChange
@@ -902,7 +939,7 @@ object MainForm: TMainForm
       Hint = 'Crinkler''s /ordertries parameter. The more tries, the longer it takes to compress. 6000 might be a reasonable maximum.'
       Top = 39
       Width = 72
-      EditLabel.Height = 15
+      EditLabel.Height = 23
       EditLabel.Width = 52
       EditLabel.Caption = 'Ordertries'
       EditLabel.ParentColor = False
@@ -916,7 +953,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Try to automatically rebuild the debug DLLs whenever something changes that affects their contents. Sometimes you have to manually rebuild anyway.'
       Top = 40
-      Width = 88
+      Width = 86
       Caption = 'Auto-rebuild'
       TabOrder = 1
       OnChange = AutoRebuildDLLCheckBoxChange
@@ -933,7 +970,7 @@ object MainForm: TMainForm
       Height = 23
       Top = 10
       Width = 133
-      EditLabel.Height = 15
+      EditLabel.Height = 23
       EditLabel.Width = 52
       EditLabel.Caption = 'EXE name'
       EditLabel.ParentColor = False
@@ -954,7 +991,7 @@ object MainForm: TMainForm
       Height = 19
       Hint = 'Keep the previous audio buffer over DLL rebuilds, so it doesn''t have to be re-rendered'
       Top = 39
-      Width = 79
+      Width = 77
       Caption = 'Keep audio'
       TabOrder = 2
       OnChange = KeepAudioCheckBoxChange
@@ -1034,9 +1071,9 @@ object MainForm: TMainForm
   end
   object ErrorsOnlyCheckBox: TCheckBox
     Left = 664
-    Height = 19
+    Height = 17
     Top = 552
-    Width = 59
+    Width = 57
     Caption = 'Err.only'
     Color = clBlack
     Font.Color = clSilver
