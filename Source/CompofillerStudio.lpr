@@ -33,7 +33,7 @@ var
   FrameCount, i: Integer;
   Frames: PCodePointer;
 begin
-  LogFileName := IncludeTrailingPathDelimiter(GetTempDir(False)) +
+  LogFileName := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
     'CompofillerStudio-errors.log';
   try
     AssignFile(LogFile, LogFileName);
@@ -68,7 +68,7 @@ end;
 
 begin
   {$IFDEF HEAPTRC_ENABLED}
-  SetHeapTraceOutput(IncludeTrailingPathDelimiter(GetTempDir(False)) +
+  SetHeapTraceOutput(IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
     'CompofillerStudio-heaptrc.log');
   {$ENDIF}
   ApplicationExceptionLogger := TApplicationExceptionLogger.Create;

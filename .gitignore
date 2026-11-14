@@ -6,5 +6,8 @@ Source/lib/
 *.ppu
 *.exe
 *.compiled
-CompoFillerStudio.lps
+*.lps
 CompoFillerStudio.exe
+/Source/lib/
+/link*.res
+/ppas.bat
