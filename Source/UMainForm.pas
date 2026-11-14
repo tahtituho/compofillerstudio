@@ -17,11 +17,12 @@ uses
   UEngine,
 
   UWaveformZoomDisplay, Types,
-  UConfigUIMappingHelpers
+  UConfigUIMappingHelpers, UAppVersion
   ;
 
 const
-  MAIN_WINDOW_CAPTION = 'Compofiller Studio v1.1.0 by Yzi/Fit, helgrima';
+  MAIN_WINDOW_CAPTION = 'Compofiller Studio v' + APP_VERSION +
+    ' by Yzi/Fit, helgrima';
 
 type
 
@@ -823,6 +824,7 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  Self.Caption := MAIN_WINDOW_CAPTION;
   FProgramPath := ExtractFilePath(Application.ExeName);
   FEngine := TEngine.Create;
   FEngine.ProgramPath := FProgramPath;

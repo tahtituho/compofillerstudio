@@ -100,8 +100,17 @@ jobs:
         run: lazbuild -B --build-mode=Release --cpu=i386 --os=win32 Source\CompofillerStudio.lpi
 
       - name: Package release
+        id: package-release
         shell: pwsh
         run: |
+          $versionSource = Get-Content -LiteralPath 'Source\UAppVersion.pas' -Raw
+          $versionPattern = "(?m)^\s*APP_VERSION\s*=\s*'(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)'\s*;"
+          $versionMatch = [regex]::Match($versionSource, $versionPattern)
+          if (-not $versionMatch.Success) {
+            throw 'Could not read APP_VERSION from Source\UAppVersion.pas.'
+          }
+          $version = $versionMatch.Groups['version'].Value
+
           $items = @('CompofillerStudio.exe', 'Doc', 'Libs', 'Templates', 'Tools')
           foreach ($item in $items) {
             if (-not (Test-Path -LiteralPath $item)) {
@@ -111,12 +120,13 @@ jobs:
 
           $releaseDirectory = Join-Path $env:RUNNER_TEMP 'release'
           New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
-          $archive = Join-Path $releaseDirectory 'CompofillerStudio.zip'
+          $archive = Join-Path $releaseDirectory "CompofillerStudio-v$version.zip"
           Compress-Archive -Path $items -DestinationPath $archive -CompressionLevel Optimal
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Upload release package
         uses: actions/upload-artifact@v4
         with:
-          name: CompofillerStudio
-          path: ${{ runner.temp }}/release/CompofillerStudio.zip
+          name: CompofillerStudio-v${{ steps.package-release.outputs.version }}
+          path: ${{ runner.temp }}/release/CompofillerStudio-v${{ steps.package-release.outputs.version }}.zip
           if-no-files-found: error
