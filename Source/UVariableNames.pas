@@ -40,7 +40,14 @@ const
   CV_LOOP_ENABLED = 'LOOP_ENABLED';
 
   // Config / music
+  CV_MUSIC_SOURCE = 'MUSIC_SOURCE';
+  MUSIC_SOURCE_4KLANG = '4klang';
+  MUSIC_SOURCE_SOINTU_TRACKER = 'sointu';
+  MUSIC_SOURCE_SOINTU_VSTI = 'sointu-vsti';
   CV_MUSIC_4KLANG_INC_FILE = 'MUSIC_4KLANG_INC_FILE';
+  CV_MUSIC_4KLANG_FILE = 'MUSIC_4KLANG_FILE';
+  CV_MUSIC_SOINTU_YAML_FILE = 'MUSIC_SOINTU_YAML_FILE';
+  CV_MUSIC_SOINTU_VSTI_INC_FILE = 'MUSIC_SOINTU_VSTI_INC_FILE';
 
   // Beats per bar is for calculating bars from the 4klang music file
   CV_MUSIC_BEATS_PER_BAR = 'MUSIC_BEATS_PER_BAR';
@@ -102,6 +109,7 @@ const
   BV_PROJECT_DIR = 'PROJECT_DIR'; // Where all the project files are, including PROJECT_FILE
   BV_PROJECT_FILE = 'PROJECT_FILE'; // What project file to build
   BV_CONFIG_FILE = 'CONFIG_FILE'; // What config to build
+  BV_MUSIC_SOINTU_VSTI_FILE = 'MUSIC_SOINTU_VSTI_FILE';
 
   // These are used e.g. by MinifyShader.script
   BV_SOURCE_FILE = 'SOURCE_FILE';

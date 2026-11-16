@@ -73,15 +73,23 @@ begin
   {$ENDIF}
   ApplicationExceptionLogger := TApplicationExceptionLogger.Create;
   Application.OnException := @ApplicationExceptionLogger.HandleException;
-  RequireDerivedFormResource:=True;
-  Application.Initialize;
-  Application.CreateForm(TMainForm, MainForm);
-  Application.CreateForm(TEditorForm, EditorForm);
-  Application.CreateForm(TVisualsForm, VisualsForm);
-  Application.CreateForm(TEditTextForm, EditTextForm);
-  Application.CreateForm(TTimingsAndTextsEditorForm, TimingsAndTextsEditorForm);
   try
-    Application.Run;
+    try
+      RequireDerivedFormResource:=True;
+      Application.Initialize;
+      Application.CreateForm(TMainForm, MainForm);
+      Application.CreateForm(TEditorForm, EditorForm);
+      Application.CreateForm(TVisualsForm, VisualsForm);
+      Application.CreateForm(TEditTextForm, EditTextForm);
+      Application.CreateForm(TTimingsAndTextsEditorForm, TimingsAndTextsEditorForm);
+      Application.Run;
+    except
+      on E: Exception do
+      begin
+        ApplicationExceptionLogger.HandleException(nil, E);
+        ExitCode := 1;
+      end;
+    end;
   finally
     Application.OnException := nil;
     ApplicationExceptionLogger.Free;

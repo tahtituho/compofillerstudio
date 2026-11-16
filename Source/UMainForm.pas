@@ -34,7 +34,9 @@ type
     Bevel3: TBevel;
     ClearProcessOutputMemoButton: TButton;
     FrameTextureUnitComboBox: TComboBox;
-    MusicHelpLabel: TLabel;
+    MusicSourceLabel: TLabel;
+    MusicSourceSointuVstiFileNameEdit: TFileNameEdit;
+    MusicSourceSointuTrackerFileNameEdit: TFileNameEdit;
     TextsTextureUnitComboBoxLabel: TLabel;
     TextsTextureUnitComboBox: TComboBox;
     TextsSamplerUniformNameEdit: TEdit;
@@ -157,9 +159,9 @@ type
     UseTimeUniformCheckBox: TCheckBox;
     ProcessOutputMemo: TRichMemo;
     ShaderFileNameEdit: TFileNameEdit;
-    MusicSourceFileNameEdit: TFileNameEdit;
-    MusicSourceFileNameLabel: TLabel;
+    MusicSource4KlangFileNameEdit: TFileNameEdit;
     ProjectFolderLabel: TLabel;
+    MusicSourceComboBox: TComboBox;
     MusicWaveDisplayPaintBox: TPaintBox;
     ShaderGroupBox: TGroupBox;
     MusicGroupBox: TGroupBox;
@@ -202,8 +204,14 @@ type
     procedure MinifyShaderFromParentActionExecute(Sender: TObject);
     procedure MinifyShaderFromParentActionUpdate(Sender: TObject);
     procedure MipMapCheckBoxChange(Sender: TObject);
+    procedure MusicSourceComboBoxChange(Sender: TObject);
+    procedure MusicSourceComboBoxDrawItem(Control: TWinControl; Index: Integer;
+      ARect: TRect; State: TOwnerDrawState);
+    procedure ProjectFileNameEditButtonClick(Sender: TObject);
     procedure MusicBeatsPerBarEditChange(Sender: TObject);
-    procedure MusicSourceFileNameEditChange(Sender: TObject);
+    procedure MusicSource4KlangFileNameEditChange(Sender: TObject);
+    procedure MusicSourceSointuTrackerFileNameEditChange(Sender: TObject);
+    procedure MusicSourceSointuVstiFileNameEditChange(Sender: TObject);
     procedure MusicWaveDisplayPaintBoxMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure MusicWaveDisplayPaintBoxMouseMove(Sender: TObject;
@@ -296,7 +304,6 @@ uses
   UTimingsAndTextsEditorForm;
 
 {$R *.lfm}
-
 
 function SanitizeUniformName(AString : String) : String;
 begin
@@ -392,6 +399,23 @@ begin
   Result := temp.Split('.')[0];
 end;
 
+function MakePathRelativeToDirectory(const BaseDirectory, FileName: String): String;
+var
+  base_path: String;
+  full_path: String;
+begin
+  Result := '';
+  if FileName = '' then Exit;
+
+  base_path := IncludeTrailingPathDelimiter(ExpandFileName(BaseDirectory));
+  if ExtractFileDrive(FileName) <> '' then
+    full_path := ExpandFileName(FileName)
+  else
+    full_path := ExpandFileName(base_path + FileName);
+
+  Result := ExtractRelativePath(base_path, full_path);
+end;
+
 { TMainForm }
 
 
@@ -401,7 +425,10 @@ begin
 
   Result := '';
   if      AControl = ShaderFileNameEdit              then Result := CV_SHADER_FILE
-  else if AControl = MusicSourceFileNameEdit         then Result := CV_MUSIC_4KLANG_INC_FILE
+  else if AControl = MusicSourceComboBox             then Result := CV_MUSIC_SOURCE
+  else if AControl = MusicSource4KlangFileNameEdit   then Result := CV_MUSIC_4KLANG_INC_FILE
+  else if AControl = MusicSourceSointuTrackerFileNameEdit then Result := CV_MUSIC_SOINTU_YAML_FILE
+  else if AControl = MusicSourceSointuVstiFileNameEdit then Result := CV_MUSIC_SOINTU_VSTI_INC_FILE
   else if AControl = MusicBeatsPerBarEdit            then Result := CV_MUSIC_BEATS_PER_BAR
 
   else if AControl = TimeBaseComboBox                then Result := CV_TIME_BASE
@@ -552,7 +579,12 @@ begin
 //    if new_time_divider <> old_time_divider then
 //      SetAutoRebuildNeeded(true);
 
-    music_effective_value_config := FEngine.GetConfigNameOfEffectiveValueForVariable(CV_MUSIC_4KLANG_INC_FILE);
+    if FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOURCE) = MUSIC_SOURCE_SOINTU_TRACKER then
+      music_effective_value_config := FEngine.GetConfigNameOfEffectiveValueForVariable(CV_MUSIC_SOINTU_YAML_FILE)
+    else if FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOURCE) = MUSIC_SOURCE_SOINTU_VSTI then
+      music_effective_value_config := FEngine.GetConfigNameOfEffectiveValueForVariable(CV_MUSIC_SOINTU_VSTI_INC_FILE)
+    else
+      music_effective_value_config := FEngine.GetConfigNameOfEffectiveValueForVariable(CV_MUSIC_4KLANG_INC_FILE);
     audio_delay := StrToIntDef(FEngine.GetEffectiveVariableValueInActiveConfig(CV_AUDIO_DELAY), 0);
     total_audio_buffer_length := muslen + audio_delay;
 
@@ -902,6 +934,9 @@ begin
 
   // Config, all the rest
   RefreshAllStoredAttributesOfChildControls(Self);
+  MusicSource4KlangFileNameEdit.Visible := MusicSourceComboBox.Text = MUSIC_SOURCE_4KLANG;
+  MusicSourceSointuTrackerFileNameEdit.Visible := MusicSourceComboBox.Text = MUSIC_SOURCE_SOINTU_TRACKER;
+  MusicSourceSointuVstiFileNameEdit.Visible := MusicSourceComboBox.Text = MUSIC_SOURCE_SOINTU_VSTI;
 
   // ============= TODO =============
   //VisualsForm.ClientWidth := StrToIntDef(FEngine.GetEffectiveVariableValueInActiveConfig(CV_RESOLUTION_X), 640)
@@ -909,7 +944,7 @@ begin
 
   CrinklerOrderTriesEdit.Enabled := (Pos('Crinkler', LinkerComboBox.Text) > 0);
 
-  // Read 4klang music values from the audio DLL where they're compiled/baked in
+  // Read music metadata from the audio DLL where it is compiled in
   RefreshMusicValues(Sender);
 
   VisualsForm.ClientWidth := StrToIntDef(FEngine.GetEffectiveVariableValueInActiveConfig(CV_RESOLUTION_X), 640);
@@ -1136,9 +1171,84 @@ begin
   ChangeEditValueAndSaveToConfigAndRefresh(MusicBeatsPerBarEdit, SanitizeFloatIfNotEmpty(MusicBeatsPerBarEdit.Text));
 end;
 
-procedure TMainForm.MusicSourceFileNameEditChange(Sender: TObject);
+procedure TMainForm.MusicSourceComboBoxChange(Sender: TObject);
+var
+  saved: Boolean;
 begin
-  SaveControlToConfig(MusicSourceFileNameEdit, MusicSourceFileNameEdit.Text);
+  if Pos('(', MusicSourceComboBox.Text) > 0 then
+    saved := SaveControlToConfig(MusicSourceComboBox, '')
+  else
+    saved := SaveControlToConfig(MusicSourceComboBox, MusicSourceComboBox.Text);
+
+  if saved then
+    SetAutoRebuildNeeded(true);
+  RefreshAllAttributes(Sender);
+end;
+
+procedure TMainForm.MusicSourceComboBoxDrawItem(Control: TWinControl;
+  Index: Integer; ARect: TRect; State: TOwnerDrawState);
+var
+  source_label: String;
+begin
+  case MusicSourceComboBox.Items[Index] of
+    MUSIC_SOURCE_4KLANG: source_label := '4klang VSTi';
+    MUSIC_SOURCE_SOINTU_TRACKER: source_label := 'Sointu Tracker (YML)';
+    MUSIC_SOURCE_SOINTU_VSTI: source_label := 'Sointu VSTi';
+  else
+    source_label := MusicSourceComboBox.Items[Index];
+  end;
+
+  MusicSourceComboBox.Canvas.FillRect(ARect);
+  MusicSourceComboBox.Canvas.TextRect(
+    ARect,
+    ARect.Left + 2 + PtrInt(MusicSourceComboBox.Items.Objects[Index]) * 14,
+    ARect.Top,
+    source_label
+  );
+end;
+
+procedure TMainForm.ProjectFileNameEditButtonClick(Sender: TObject);
+begin
+  if FEngine <> nil then
+    (Sender as TFileNameEdit).InitialDir := ExpandFileName(FEngine.ProjectDirectory);
+end;
+
+procedure TMainForm.MusicSource4KlangFileNameEditChange(Sender: TObject);
+var
+  saved: Boolean;
+begin
+  saved := SaveControlToConfig(
+    MusicSource4KlangFileNameEdit,
+    MakePathRelativeToDirectory(FEngine.ProjectDirectory, MusicSource4KlangFileNameEdit.Text)
+  );
+  if saved then
+    SetAutoRebuildNeeded(true);
+  RefreshAllAttributes(Sender);
+end;
+
+procedure TMainForm.MusicSourceSointuTrackerFileNameEditChange(Sender: TObject);
+var
+  saved: Boolean;
+begin
+  saved := SaveControlToConfig(
+    MusicSourceSointuTrackerFileNameEdit,
+    MakePathRelativeToDirectory(FEngine.ProjectDirectory, MusicSourceSointuTrackerFileNameEdit.Text)
+  );
+  if saved then
+    SetAutoRebuildNeeded(true);
+  RefreshAllAttributes(Sender);
+end;
+
+procedure TMainForm.MusicSourceSointuVstiFileNameEditChange(Sender: TObject);
+var
+  saved: Boolean;
+begin
+  saved := SaveControlToConfig(
+    MusicSourceSointuVstiFileNameEdit,
+    MakePathRelativeToDirectory(FEngine.ProjectDirectory, MusicSourceSointuVstiFileNameEdit.Text)
+  );
+  if saved then
+    SetAutoRebuildNeeded(true);
   RefreshAllAttributes(Sender);
 end;
 
@@ -1171,7 +1281,6 @@ procedure TMainForm.MusicWaveDisplayPaintBoxMouseUp(Sender: TObject;
 begin
   FWaveformZoomDisplay.MouseUp(Button, Shift, X, Y);
 end;
-
 
 procedure TMainForm.ConfigComboBoxChange(Sender: TObject);
 begin
@@ -1355,7 +1464,12 @@ end;
 
 procedure TMainForm.OpenMusicSourceActionExecute(Sender: TObject);
 begin
-  ShellExecFile(FEngine.ProjectDirectory, FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_4KLANG_INC_FILE));
+  if FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOURCE) = MUSIC_SOURCE_SOINTU_TRACKER then
+    ShellExecFile(FEngine.ProjectDirectory, FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOINTU_YAML_FILE))
+  else if FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOURCE) = MUSIC_SOURCE_SOINTU_VSTI then
+    ShellExecFile(FEngine.ProjectDirectory, FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOINTU_VSTI_INC_FILE))
+  else
+    ShellExecFile(FEngine.ProjectDirectory, FEngine.GetEffectiveVariableValueInActiveConfig(CV_MUSIC_4KLANG_INC_FILE));
 end;
 
 procedure TMainForm.OpenProjectActionExecute(Sender: TObject);

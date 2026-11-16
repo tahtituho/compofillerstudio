@@ -1,4 +1,4 @@
-# Compofiller Studio 1.1.0
+# Compofiller Studio 1.1.1
 [![Build](https://github.com/tahtituho/compofillerstudio/actions/workflows/build.yml/badge.svg)](https://github.com/tahtituho/compofillerstudio/actions/workflows/build.yml)
 
 "IDE" for making Windows 4k intros  
@@ -12,6 +12,7 @@ This readme updated: 2026-11-13
 - No C/C++ or x86 coding needed
 - No Visual Studio needed
 - Ready-made templates, but you can customize everything
+- Supports 4klang and sointu
 
 ## Components
 
@@ -40,13 +41,15 @@ Compofiller Studio is a bundling of components from several people and projects.
   by Rune L. H. Stubbe (Mentor/TBC) and Aske Simon Christensen (Blueberry/Loonies)
 - NASM assembler 3.02
 - GNU ld linker 2.38
+- sointu 0.6.0 <https://github.com/vsariola/sointu>
 
 Not really bundled as such, but Compofiller Studio is meant to work with:
 
 - 4klang, "Alcatraz Software Synthesizer"  
   by Dominik Ries (Gopher/Alcatraz) and Paul Kraus (pOWL/Alcatraz)
+- sointu tracker by vsariola
 
-See each individual folder for licensing information.
+See each individual folder or website for licensing information.
 
 ## License for parts made by Yzi
 

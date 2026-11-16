@@ -5,6 +5,7 @@ Source/lib/
 *.obj
 *.ppu
 *.exe
+!Tools/sointu/sointu-compile.exe
 *.compiled
 *.lps
 CompoFillerStudio.exe

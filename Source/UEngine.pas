@@ -141,7 +141,7 @@ type
     // this is in "mono samples", and we might pad it to get some extra silence at the end
     function GetAllocatedAudioLengthInMonoSamples : Cardinal;
     function GetMusicBPM: Single;
-    function GetMusicLengthSamples: Cardinal; // this should be the actual musical length, in "stereo samples", as specified in 4klang.inc
+    function GetMusicLengthSamples: Cardinal; // this should be the actual musical length, in stereo frames
     function GetMusicSampleRate: Cardinal;
 
     procedure RefreshAudioThings;
@@ -575,6 +575,14 @@ begin
     + BV_PROJECT_FILE+'='+FProjectFile + #13#10 + #13#10
     + BV_PROJECT_DIR+'='+FProjectDirectory + #13#10 + #13#10
     + BV_CONFIG_FILE+'='+GetActiveConfig + #13#10 + #13#10
+    + CV_MUSIC_4KLANG_FILE+'='+ChangeFileExt(
+        ExtractFileName(GetEffectiveVariableValueInActiveConfig(CV_MUSIC_4KLANG_INC_FILE)),
+        ''
+      ) + #13#10 + #13#10
+    + BV_MUSIC_SOINTU_VSTI_FILE+'='+ChangeFileExt(
+        GetEffectiveVariableValueInActiveConfig(CV_MUSIC_SOINTU_VSTI_INC_FILE),
+        ''
+      ) + #13#10 + #13#10
   ;
 end;
 
@@ -1304,7 +1312,7 @@ begin
     Result := FAudioDLL.GetMusicBPM()
   else
   begin
-    AddLogMessage('Cannot get 4klang music attributes.');
+    AddLogMessage('Cannot get music attributes.');
     Result := 0.0;
   end;
 end;

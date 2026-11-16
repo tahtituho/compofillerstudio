@@ -31,15 +31,42 @@ include common.script
 
 
 
-# Audio debug/test DLL 
-debug_4klang.obj: debug_4klang_wrapper.asm 4klang.asm 4klang.inc
-	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(FORCED_4KLANG_OPTS) -o $@ $<
-
+# Audio debug/test DLL
 debug_audio.obj: debug_audio.asm errormsg.inc
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
 
+ifeq ($(MUSIC_SOURCE),4klang)
+debug_4klang.obj: debug_4klang_wrapper.asm $(MUSIC_4KLANG_FILE).asm $(MUSIC_4KLANG_FILE).inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(FORCED_4KLANG_OPTS) -o $@ $<
+
 debug_audio.dll: debug_audio.obj debug_4klang.obj
 	$(DEBUG_LINKER_EXE) $(DEBUG_LINKER_OPTS) -o $@ $^ $(DEBUG_LINKER_AUDIO_LIBS_PARAMS)
+else
+ifeq ($(MUSIC_SOURCE),sointu)
+__sointu_song.asm:
+	$(SOINTU_COMPILER_EXE) -i -arch 386 -os windows -o __sointu_song "$(MUSIC_SOINTU_YAML_FILE)"
+
+debug_sointu_song.obj: __sointu_song.asm
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+debug_sointu_wrapper.obj: debug_sointu_wrapper.asm __sointu_song.inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+debug_audio.dll: debug_audio.obj debug_sointu_song.obj debug_sointu_wrapper.obj
+	$(DEBUG_LINKER_EXE) $(DEBUG_LINKER_OPTS) -o $@ $^ $(DEBUG_LINKER_AUDIO_LIBS_PARAMS)
+else
+ifeq ($(MUSIC_SOURCE),sointu-vsti)
+debug_sointu_vsti_song.obj: $(MUSIC_SOINTU_VSTI_FILE).asm $(MUSIC_SOINTU_VSTI_FILE).inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -o $@ $<
+
+debug_sointu_vsti_wrapper.obj: debug_sointu_wrapper.asm $(MUSIC_SOINTU_VSTI_FILE).inc
+	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) -DSOINTU_INCLUDE_FILE=$(QUOTE)$(MUSIC_SOINTU_VSTI_FILE).inc$(QUOTE) -o $@ $<
+
+debug_audio.dll: debug_audio.obj debug_sointu_vsti_song.obj debug_sointu_vsti_wrapper.obj
+	$(DEBUG_LINKER_EXE) $(DEBUG_LINKER_OPTS) -o $@ $^ $(DEBUG_LINKER_AUDIO_LIBS_PARAMS)
+endif
+endif
+endif
 
 
 # Visuals debug/test DLL 
