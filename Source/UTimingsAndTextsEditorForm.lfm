@@ -82,6 +82,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
       TabOrder = 2
       OnCompareCells = TimingsAndTextsStringGridCompareCells
       OnEditingDone = TimingsAndTextsStringGridEditingDone
+      OnExit = InputControlExit
       OnPrepareCanvas = TimingsAndTextsStringGridPrepareCanvas
       OnSelectCell = TimingsAndTextsStringGridSelectCell
     end
@@ -173,6 +174,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 74
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 2
       end
       object FontSizeLabel: TLabel
@@ -191,6 +193,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Top = 0
         Width = 146
         OnChange = FontNameEditChange
+        OnExit = InputControlExit
         TabOrder = 0
         Text = 'Arial'
       end
@@ -211,6 +214,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 71
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 10
       end
       object CharacterExtraSpacingLabel: TLabel
@@ -228,6 +232,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 47
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 3
       end
       object FontStrikeoutSpinEditLabel: TLabel
@@ -245,6 +250,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 47
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 4
       end
       object FontUnderlineSpinEditLabel: TLabel
@@ -262,6 +268,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 47
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 5
       end
       object FontItalicSpinEditLabel: TLabel
@@ -279,6 +286,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 47
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 6
       end
       object FontWeightSpinEditLabel: TLabel
@@ -304,6 +312,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 58
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 7
       end
       object FontEscapementSpinEdit: TSpinEdit
@@ -313,6 +322,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 64
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 8
       end
       object FontEscapementSpinEditLabel: TLabel
@@ -338,6 +348,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Width = 56
         MaxValue = 9999
         OnChange = Font_some_SpinEditChange
+        OnExit = InputControlExit
         TabOrder = 9
       end
       object CreateFontHelpLabel: TLabel
@@ -392,6 +403,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Top = 5
         Width = 56
         OnChange = ResolutionXEditChange
+        OnExit = InputControlExit
         TabOrder = 0
       end
       object ResLabel: TLabel
@@ -408,6 +420,7 @@ object TimingsAndTextsEditorForm: TTimingsAndTextsEditorForm
         Top = 5
         Width = 56
         OnChange = ResolutionYEditChange
+        OnExit = InputControlExit
         TabOrder = 1
       end
     end

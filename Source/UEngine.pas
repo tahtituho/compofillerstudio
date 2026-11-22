@@ -26,6 +26,7 @@ type
   TEngine = class;
   TBuildEvent = procedure(ASender : TEngine; ADescription : String) of object;
   TShaderErrorsEvent = procedure(ASender : TEngine; AFileName : String; AErrors: TStrings) of object;
+  TShaderCompilationStateEvent = procedure(ASender: TEngine; AIsCompiling: Boolean) of object;
 
   TEngine = class(TObject)
   private
@@ -34,6 +35,7 @@ type
     FOnBuildEnd : TBuildEvent;
     FOnPlaybackStateChanged : TBuildEvent;
     FOnShaderErrors: TShaderErrorsEvent;
+    FOnShaderCompilationStateChanged: TShaderCompilationStateEvent;
 
     FProjectDirectory : String;
     FProjectFile : String;
@@ -66,6 +68,7 @@ type
     function GetLoopEnabled: Boolean;
     function GetRunThreadIsRunning: Boolean;
     procedure HighlightShaderErrors(AFileName : String; AErrors: String);
+    procedure NotifyShaderCompilationStateChanged(AIsCompiling: Boolean);
 
     procedure SetAutoRebuild(AValue: Boolean);
     procedure SetKeepAudio(AValue: Boolean);
@@ -104,6 +107,7 @@ type
     FShaderSourceFileName : String;
     FShaderSourceFileAge : LongInt;
     FLastLoadedShaderSourceFileName : String;
+    FShaderReloadInProgress : Boolean;
 
     function CheckAudioDLLLoaded : Boolean;
     function CheckAudioReady : Boolean;
@@ -272,6 +276,8 @@ type
     property OnBuildStart : TBuildEvent read FOnBuildStart write FOnBuildStart;
     property OnBuildEnd : TBuildEvent read FOnBuildEnd write FOnBuildEnd;
     property OnShaderErrors : TShaderErrorsEvent read FOnShaderErrors write SetOnShaderErrors;
+    property OnShaderCompilationStateChanged: TShaderCompilationStateEvent
+      read FOnShaderCompilationStateChanged write FOnShaderCompilationStateChanged;
 
   end; // class TEngine
 
@@ -483,6 +489,11 @@ begin
     CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdTerminate, nil));
     FRunThread := nil;
   end;
+  if FShaderReloadInProgress then
+  begin
+    FShaderReloadInProgress := false;
+    NotifyShaderCompilationStateChanged(false);
+  end;
   if Assigned(FOnPlaybackStateChanged) then
     FOnPlaybackStateChanged(Self, 'Stopped');
 end;
@@ -490,6 +501,7 @@ end;
 procedure TEngine.StopAndUnloadDLLs;
 begin
   StopAndTerminateRunThread;
+  FShaderReloadInProgress := false;
 
   if (FAudioDLL <> nil) then // and FAudioDLL.Loaded then
     FreeAndNil(FAudioDLL); // the destructor will kill the 4klang audio renderer thread
@@ -502,6 +514,12 @@ begin
 
   if Assigned(FOnPlaybackStateChanged) then
     FOnPlaybackStateChanged(Self, '');
+end;
+
+procedure TEngine.NotifyShaderCompilationStateChanged(AIsCompiling: Boolean);
+begin
+  if Assigned(FOnShaderCompilationStateChanged) then
+    FOnShaderCompilationStateChanged(Self, AIsCompiling);
 end;
 
 function RemoveTrailingBackslash(AString : String) : String;
@@ -1328,10 +1346,16 @@ procedure TEngine.Play(AStartTime : Integer);
 var
   command_result : TCommandResultRec;
   audio_buffer_samples : QWord;
+  initial_shader_file_name : String;
+  initial_shader_file_age : LongInt;
+  created_run_thread : Boolean;
 begin
+  created_run_thread := false;
   try
     RefreshShaderFileName;
     RefreshAudioThings;
+    initial_shader_file_name := FShaderSourceFileName;
+    initial_shader_file_age := FileAge(FProjectDirectory + initial_shader_file_name);
 
     if not CheckAudioReady then
     begin
@@ -1376,6 +1400,8 @@ begin
           Self.VisualsWindowHandle, FAudioDLL, Self.FAudioBuffer, FAudioBufferLengthSamples,
           FLoopEnabled, FLoopStartAudioPosition, FLoopEndAudioPosition
           );
+      created_run_thread := true;
+      NotifyShaderCompilationStateChanged(true);
       // The RunThread is created in "suspended" state.
       FRunThread.Start; // <-- this STARTS the thread. After this is not suspended anymore!!
       // *** THE RUN THREAD MUST NOT BE TALKED TO DIRECTLY !!!!!! ONLY VIA THE COMMAND PROXY ***
@@ -1412,6 +1438,12 @@ begin
       Exit;
     end;
 
+    if created_run_thread then
+    begin
+      FLastLoadedShaderSourceFileName := initial_shader_file_name;
+      FShaderSourceFileAge := initial_shader_file_age;
+    end;
+
     if not command_result.Result then
     begin
       AddLogMessage('DrawFrame failed! Error: ' + command_result.Info);
@@ -1429,6 +1461,8 @@ begin
     end;
 
   finally
+    if created_run_thread then
+      NotifyShaderCompilationStateChanged(false);
     if Assigned(FOnPlaybackStateChanged) then
       FOnPlaybackStateChanged(Self, 'Playing');
   end;
@@ -1542,47 +1576,65 @@ var
   fage : LongInt;
   fname : String;
   reload_result : TCommandResultRec;
-  runparams : TRunParamsRec;
-  draw_result : TCommandResultRec;
+  reloaded_file_name : String;
+  queue_result : TThreadCommadQueueResult;
 
 begin
   Result := false;
+  if FShaderReloadInProgress and (FRunThreadCommandProxy <> nil) then
+  begin
+    if FRunThreadCommandProxy.ThreadCrashed then
+    begin
+      FShaderReloadInProgress := false;
+      NotifyShaderCompilationStateChanged(false);
+      CheckThreadCommand(tcqThreadCrashed);
+    end
+    else if FRunThreadCommandProxy.TryTakeShaderReloadResult(
+      reloaded_file_name,
+      reload_result.Result,
+      reload_result.Info
+    ) then
+    begin
+      FShaderReloadInProgress := false;
+      NotifyShaderCompilationStateChanged(false);
+      FLastLoadedShaderSourceFileName := reloaded_file_name;
+      if not reload_result.Result or (reload_result.Info <> '') then
+      begin
+        AddLogMessage('Error. Something happened when reloading shader: ' + reload_result.Info);
+        HighlightShaderErrors(reloaded_file_name, reload_result.Info);
+      end
+      else
+      begin
+        AddLogMessage('Success! Shader reloaded without any warnings.');
+        HighlightShaderErrors(reloaded_file_name, '');
+      end;
+    end;
+  end;
+
   fname := FProjectDirectory + FShaderSourceFileName;
   fage := FileAge(fname);
   if (fage <> FShaderSourceFileAge) or (FShaderSourceFileName <> FLastLoadedShaderSourceFileName) then
   begin
     Result := true;
-    FShaderSourceFileAge := fage;
     if (FRunThread <> nil) and (FRunThreadCommandProxy <> nil) then
     begin
-      reload_result := Default(TCommandResultRec);
-      runparams.ShaderFileName := Self.FShaderSourceFileName;
-      CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdSetRunParams, @runparams));
-      CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdReloadShader, @reload_result));
-      FLastLoadedShaderSourceFileName := FShaderSourceFileName;
-      if not reload_result.Result or (reload_result.Info <> '') then
+      if not FShaderReloadInProgress then
       begin
-        AddLogMessage('Error. Something happened when reloading shader: ' + reload_result.Info);
-        HighlightShaderErrors(FShaderSourceFileName, reload_result.Info);
-      end
-      else if (reload_result.Info = '') then
-      begin
-        AddLogMessage('Success! Shader reloaded without any warnings.');
-        HighlightShaderErrors(FShaderSourceFileName, ''); // remove error highlights
-      end;
-
-      // If we're playing, then the next frame will be done with the new shader.
-      // But if we're not playing, we redraw the current frame.
-      if not FRunning then
-      begin
-        CheckThreadCommand(FRunThreadCommandProxy.ExecuteCommandFuncSync(@FRunThread.cmdDrawFrame, @draw_result));
-        if not draw_result.Result then
+        queue_result := FRunThreadCommandProxy.QueueShaderReload(
+          FShaderSourceFileName,
+          @FRunThread.cmdReloadShaderAsync
+        );
+        if CheckThreadCommand(queue_result) then
         begin
-          AddLogMessage('DrawFrame failed! Error: ' + draw_result.Info);
-          HighlightShaderErrors(FShaderSourceFileName, draw_result.Info);
+          FShaderReloadInProgress := true;
+          FShaderSourceFileAge := fage;
+          NotifyShaderCompilationStateChanged(true);
+          AddLogMessage('Compiling shader: ' + FShaderSourceFileName + '...');
         end;
       end;
     end;
+    if (FRunThread = nil) then
+      FShaderSourceFileAge := fage;
   end;
 end; // TEngine.CheckShaderChanged
 

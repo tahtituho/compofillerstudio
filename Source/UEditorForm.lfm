@@ -65,15 +65,6 @@ object EditorForm: TEditorForm
     Caption = 'Shader text as it will be sent to the shader compiler'
     ParentColor = False
   end
-  object MinifyFromParentButton: TButton
-    Left = 8
-    Height = 25
-    Top = 630
-    Width = 296
-    Action = MainForm.MinifyShaderFromParentAction
-    Anchors = [akLeft, akBottom]
-    TabOrder = 4
-  end
   object EditorsPanel: TPanel
     Left = 8
     Height = 552
@@ -708,10 +699,6 @@ object EditorForm: TEditorForm
       Caption = 'Save'
       OnExecute = SaveActionExecute
       ShortCut = 16467
-    end
-    object MinifyEditorShaderFromParentAction1: TAction
-      Caption = 'Minify this editor''s file from its parent'
-      OnUpdate = MinifyEditorShaderFromParentAction1Update
     end
     object SearchTextAction: TAction
       Caption = 'SearchTextAction'

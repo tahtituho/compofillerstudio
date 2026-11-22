@@ -42,6 +42,7 @@ object MainForm: TMainForm
       Visible = False
       OnButtonClick = ProjectFileNameEditButtonClick
       OnChange = MusicSource4KlangFileNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object MusicSourceSointuTrackerFileNameEdit: TFileNameEdit
       Left = 8
@@ -60,6 +61,7 @@ object MainForm: TMainForm
       Visible = False
       OnButtonClick = ProjectFileNameEditButtonClick
       OnChange = MusicSourceSointuTrackerFileNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object MusicSourceSointuVstiFileNameEdit: TFileNameEdit
       Left = 8
@@ -78,6 +80,7 @@ object MainForm: TMainForm
       Visible = False
       OnButtonClick = ProjectFileNameEditButtonClick
       OnChange = MusicSourceSointuVstiFileNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object MusicSampleRateEdit: TLabeledEdit
       Left = 350
@@ -96,6 +99,7 @@ object MainForm: TMainForm
       ParentFont = False
       ReadOnly = True
       TabOrder = 0
+      OnExit = AutoRebuildInputExit
     end
     object MusicBPMEdit: TLabeledEdit
       Left = 350
@@ -114,6 +118,7 @@ object MainForm: TMainForm
       ParentFont = False
       ReadOnly = True
       TabOrder = 1
+      OnExit = AutoRebuildInputExit
     end
     object MusicLengthSamplesEdit: TLabeledEdit
       Left = 350
@@ -132,6 +137,7 @@ object MainForm: TMainForm
       ParentFont = False
       ReadOnly = True
       TabOrder = 10
+      OnExit = AutoRebuildInputExit
     end
     object TimeDividerEdit: TLabeledEdit
       Left = 634
@@ -146,6 +152,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       TabOrder = 7
       OnChange = TimeDividerEditChange
+      OnExit = AutoRebuildInputExit
     end
     object MusicValuesLabel: TLabel
       Left = 248
@@ -164,6 +171,7 @@ object MainForm: TMainForm
       Font.Height = -11
       ParentFont = False
       ReadOnly = True
+      OnExit = AutoRebuildInputExit
       TabOrder = 3
     end
     object MusicBeatsPerBarEdit: TLabeledEdit
@@ -178,6 +186,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       TabOrder = 5
       OnChange = MusicBeatsPerBarEditChange
+      OnExit = AutoRebuildInputExit
     end
     object TimeBaseComboBox: TComboBox
       Left = 634
@@ -222,6 +231,7 @@ object MainForm: TMainForm
       EditLabel.Font.Height = -9
       TabOrder = 4
       OnChange = AudioOffsetEditChange
+      OnExit = AutoRebuildInputExit
     end
     object MusicSourceComboBox: TComboBox
       Left = 8
@@ -273,6 +283,7 @@ object MainForm: TMainForm
       TabOrder = 0
       OnButtonClick = ProjectFileNameEditButtonClick
       OnChange = ShaderFileNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object UseTimeUniformCheckBox: TCheckBox
       Left = 448
@@ -303,6 +314,7 @@ object MainForm: TMainForm
       TabOrder = 12
       Text = 'time'
       OnChange = TimeUniformNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object OpenShaderButton: TButton
       Left = 16
@@ -321,6 +333,7 @@ object MainForm: TMainForm
       TabOrder = 10
       Text = 'resolution'
       OnChange = ResolutionUniformNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object ResLabel: TLabel
       Left = 362
@@ -337,6 +350,7 @@ object MainForm: TMainForm
       Width = 56
       TabOrder = 4
       OnChange = ResolutionXEditChange
+      OnExit = AutoRebuildInputExit
     end
     object ResolutionYEdit: TEdit
       Left = 375
@@ -345,6 +359,7 @@ object MainForm: TMainForm
       Width = 56
       TabOrder = 5
       OnChange = ResolutionYEditChange
+      OnExit = AutoRebuildInputExit
     end
     object ResolutionLabel: TLabel
       Left = 241
@@ -378,17 +393,6 @@ object MainForm: TMainForm
       Width = 42
       Action = EditShaderAction
       TabOrder = 2
-    end
-    object MinifyShaderFromParentButton: TButton
-      Left = 116
-      Height = 24
-      Top = 24
-      Width = 117
-      Action = MinifyShaderFromParentAction
-      Font.Height = -12
-      Font.Name = 'Arial Narrow'
-      ParentFont = False
-      TabOrder = 3
     end
     object TwoPassRenderCheckBox: TCheckBox
       Left = 440
@@ -461,6 +465,7 @@ object MainForm: TMainForm
       Text = 'custom'
       Visible = False
       OnChange = ResolutionUniformNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object TextsSamplerUniformNameEdit: TEdit
       Left = 610
@@ -471,6 +476,7 @@ object MainForm: TMainForm
       TabOrder = 18
       Text = 'texts_sampler'
       OnChange = TextsSamplerUniformNameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object UseTextsUniformCheckBox: TCheckBox
       Left = 517
@@ -660,6 +666,7 @@ object MainForm: TMainForm
       Width = 373
       Color = clBtnFace
       TabOrder = 5
+      OnExit = AutoRebuildInputExit
     end
     object ParentConfigLabel: TLabel
       Left = 232
@@ -687,6 +694,7 @@ object MainForm: TMainForm
       Color = clBtnFace
       ReadOnly = True
       TabOrder = 4
+      OnExit = AutoRebuildInputExit
     end
     object EditTimingsAndTextsButton: TButton
       Left = 589
@@ -809,6 +817,7 @@ object MainForm: TMainForm
       Width = 56
       TabOrder = 9
       OnChange = LoopStartEditChange
+      OnExit = AutoRebuildInputExit
     end
     object LoopEndEdit: TEdit
       Left = 544
@@ -818,6 +827,7 @@ object MainForm: TMainForm
       Width = 56
       TabOrder = 10
       OnChange = LoopEndEditChange
+      OnExit = AutoRebuildInputExit
     end
     object LoopCheckBox: TCheckBox
       Left = 432
@@ -947,6 +957,7 @@ object MainForm: TMainForm
       TabOrder = 3
       TextHint = 'Crinkler /ordertries parameter'
       OnChange = CrinklerOrderTriesEditChange
+      OnExit = AutoRebuildInputExit
     end
     object AutoRebuildDLLCheckBox: TCheckBox
       Left = 10
@@ -977,6 +988,7 @@ object MainForm: TMainForm
       LabelPosition = lpLeft
       TabOrder = 4
       OnChange = EXENameEditChange
+      OnExit = AutoRebuildInputExit
     end
     object LinkerLabel: TLabel
       Left = 207
@@ -1161,12 +1173,6 @@ object MainForm: TMainForm
       Hint = 'Edit the shader in the built-in editor'
       OnExecute = EditShaderActionExecute
     end
-    object MinifyShaderFromParentAction: TAction
-      Category = 'ConfigVisuals'
-      Caption = 'Minify from parent'
-      OnExecute = MinifyShaderFromParentActionExecute
-      OnUpdate = MinifyShaderFromParentActionUpdate
-    end
     object OpenProjectAction: TAction
       Category = 'Project'
       Caption = 'Open project...'
@@ -1290,7 +1296,7 @@ object MainForm: TMainForm
     Top = 368
   end
   object CheckShaderChangedTimer: TTimer
-    Interval = 10
+    Interval = 500
     OnTimer = CheckShaderChangedTimerTimer
     Left = 136
     Top = 349

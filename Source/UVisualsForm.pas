@@ -18,10 +18,12 @@ type
     procedure FormShow(Sender: TObject);
     procedure StayOnTopMenuItemClick(Sender: TObject);
   private
-    { private declarations }
+    FAverageFrameTimeMS: Single;
+    FShaderCompiling: Boolean;
+    procedure UpdateCaption;
   public
-    { public declarations }
     procedure DisplayAverageFrameTime(AValue: Single);
+    procedure SetShaderCompiling(AValue: Boolean);
   end;
 
 var
@@ -55,10 +57,31 @@ end;
 
 procedure TVisualsForm.DisplayAverageFrameTime(AValue : Single);
 begin
-  if AValue > 0.1 then
-    Self.Caption := 'Avg ' + FormatFloat('0.0', 1000.0 / AValue) + ' fps'
+  FAverageFrameTimeMS := AValue;
+  UpdateCaption;
+end;
+
+procedure TVisualsForm.SetShaderCompiling(AValue: Boolean);
+begin
+  if FShaderCompiling = AValue then Exit;
+  FShaderCompiling := AValue;
+  UpdateCaption;
+  Repaint;
+end;
+
+procedure TVisualsForm.UpdateCaption;
+var
+  status_text: String;
+begin
+  if FAverageFrameTimeMS > 0.1 then
+    status_text := 'Avg ' + FormatFloat('0.0', 1000.0 / FAverageFrameTimeMS) + ' fps'
   else
-    Self.Caption := 'Avg fps not available.';
+    status_text := 'Avg fps not available.';
+
+  if FShaderCompiling then
+    Self.Caption := 'Compiling - ' + status_text
+  else
+    Self.Caption := status_text;
 end;
 
 end.
