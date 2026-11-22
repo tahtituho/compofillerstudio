@@ -9,7 +9,16 @@ include $(CONFIG_FILE)
 
 include common.script
 
+ifeq ($(MINIFY_SHADER),1)
 TEMP_PROCESSED_SHADER_FILE=__temp_processed_shader.glsl
+
+$(TEMP_PROCESSED_SHADER_FILE): $(SHADER_FILE)
+	"$(PROGRAM_DIR)\Tools\ShaderMinifier\shader_minifier.exe" --format text --preserve-externals "$(SHADER_FILE)" -o "$@"
+
+SHADER_EMBED_FILE=$(TEMP_PROCESSED_SHADER_FILE)
+else
+SHADER_EMBED_FILE=$(SHADER_FILE)
+endif
 
 ifeq ($(MUSIC_SOURCE),4klang)
 4klang.obj: 4klang.asm 4klang.inc
@@ -40,9 +49,9 @@ endif
 endif
 endif
 
-shader_code.obj: shader_code.asm $(SHADER_FILE)
+shader_code.obj: shader_code.asm $(SHADER_EMBED_FILE)
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) \
-           -DTEMP_PROCESSED_SHADER_FILE=$(QUOTE)$(SHADER_FILE)$(QUOTE) -o $@ $<
+           -DTEMP_PROCESSED_SHADER_FILE=$(QUOTE)$(SHADER_EMBED_FILE)$(QUOTE) -o $@ $<
 
 exemain.obj: exemain.asm
 	$(ASSEMBLER_EXE) $(ASSEMBLER_OPTS) $(VISUALS_ASM_OPTS) -o $@ $<

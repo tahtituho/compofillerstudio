@@ -4,7 +4,7 @@
 "IDE" for making Windows 4k intros  
 by Yzi, helgrima
 
-This readme updated: 2026-11-13
+This readme updated: 2026-11-22
 
 ## Benefits
 
@@ -50,6 +50,10 @@ Not really bundled as such, but Compofiller Studio is meant to work with:
 - sointu tracker by vsariola
 
 See each individual folder or website for licensing information.
+
+## Migration from V1.0 Beta 8
+
+There is no easy way to migrate from old projects. Easiest way would be create new project and copy old shader and music relearted files to new project. Then handle everything else in UI.
 
 ## License for parts made by Yzi
 

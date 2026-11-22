@@ -43,6 +43,11 @@ type
     FAverageFrameTimeMS : Single;
     FLastOperationResult : Boolean;
     FLastOperationInfo : String;
+    FShaderReloadPending : Boolean;
+    FShaderReloadCompleted : Boolean;
+    FShaderReloadFileName : String;
+    FShaderReloadResult : Boolean;
+    FShaderReloadInfo : String;
 
   public
     function GetTime : Integer;
@@ -53,6 +58,12 @@ type
     // instead of calling a command, which will block the Engine's thread
     // i.e. main GUI thread, until the RunThread has completed drawing a frame.
     procedure GetLastOperationInfo(var AResult : Boolean; var AInfo : String);
+    function QueueShaderReload(const AFileName: String;
+      AFunc: TThreadCommandFunc): TThreadCommadQueueResult;
+    function TryTakeShaderReloadResult(var AFileName: String;
+      var AResult: Boolean; var AInfo: String): Boolean;
+    function GetShaderReloadFileName: String;
+    procedure SetShaderReloadResult(AResult: Boolean; const AInfo: String);
 
     property AverageFrameTimeMS : Single read FAverageFrameTimeMS;
   end; // TRunThreadCommandProxy
@@ -156,7 +167,7 @@ type
     procedure cmdDrawFrame(AData: Pointer);
     procedure cmdTerminate(AData: Pointer);
     procedure cmdSetRunParams(AData: Pointer);
-    procedure cmdReloadShader(AData: Pointer);
+    procedure cmdReloadShaderAsync(AData: Pointer);
     procedure cmdGetLastFrameResult(AData: Pointer);
     procedure cmdCopyFrameToBitmap(AData: Pointer); // AData : Graphics.TBitmap
     procedure cmdCopyTextsBitmapToPaintBox(AData: Pointer); // AData : ExtCtrls.TPaintBox
@@ -204,6 +215,80 @@ begin
   AResult := Self.FLastOperationResult;
   AInfo := Self.FLastOperationInfo;
   Self.EndBatch;
+end;
+
+function TRunThreadCommandProxy.QueueShaderReload(const AFileName: String;
+  AFunc: TThreadCommandFunc): TThreadCommadQueueResult;
+begin
+  Result := StartBatch;
+  if Result <> tcqOk then Exit;
+
+  try
+    if FShaderReloadPending then
+      Result := tcqSomeUnknownThing
+    else
+    begin
+      FShaderReloadPending := true;
+      FShaderReloadCompleted := false;
+      FShaderReloadFileName := AFileName;
+      try
+        Result := EnqueueFunc(AFunc, nil);
+      except
+        FShaderReloadPending := false;
+        raise;
+      end;
+      if Result <> tcqOk then
+        FShaderReloadPending := false;
+    end;
+  finally
+    EndBatch;
+  end;
+end;
+
+function TRunThreadCommandProxy.TryTakeShaderReloadResult(
+  var AFileName: String; var AResult: Boolean; var AInfo: String): Boolean;
+begin
+  Result := false;
+  if StartBatch <> tcqOk then Exit;
+
+  try
+    if FShaderReloadCompleted then
+    begin
+      AFileName := FShaderReloadFileName;
+      AResult := FShaderReloadResult;
+      AInfo := FShaderReloadInfo;
+      FShaderReloadPending := false;
+      FShaderReloadCompleted := false;
+      Result := true;
+    end;
+  finally
+    EndBatch;
+  end;
+end;
+
+function TRunThreadCommandProxy.GetShaderReloadFileName: String;
+begin
+  if StartBatch <> tcqOk then
+    raise Exception.Create('Could not lock shader reload request.');
+  try
+    Result := FShaderReloadFileName;
+  finally
+    EndBatch;
+  end;
+end;
+
+procedure TRunThreadCommandProxy.SetShaderReloadResult(AResult: Boolean;
+  const AInfo: String);
+begin
+  if StartBatch <> tcqOk then
+    raise Exception.Create('Could not lock shader reload result.');
+  try
+    FShaderReloadResult := AResult;
+    FShaderReloadInfo := AInfo;
+    FShaderReloadCompleted := true;
+  finally
+    EndBatch;
+  end;
 end;
 
 
@@ -691,28 +776,43 @@ begin
   end;
 end;
 
-procedure TRunThread.cmdReloadShader(AData: Pointer);
+procedure TRunThread.cmdReloadShaderAsync(AData: Pointer);
 var
-  res : PCommandResultRec;
-  b : Boolean;
+  file_name, info, draw_info : String;
+  compiled, drawn : Boolean;
 begin
-  res := PCommandResultRec(AData);
+  compiled := false;
+  info := '';
 
   try
-    b := CheckShaderCompiled;
+    file_name := FCommandProxy.GetShaderReloadFileName;
+    FShaderSourceFileName := file_name;
+    compiled := CheckShaderCompiled;
     UpdateLastOperationInfo;
+    info := GetLastOperationInfo;
 
-    if res <> nil then
+    if not FPlaying then
     begin
-      res^.Result := b;
-      res^.Info := Self.GetLastOperationInfo;
+      drawn := DrawFrame;
+      if not drawn then
+        compiled := false;
+      draw_info := GetLastOperationInfo;
+      if draw_info <> '' then
+      begin
+        if info <> '' then
+          info := info + #13;
+        info := info + draw_info;
+      end;
     end;
-
   except
-    on e : Exception do
-      if res <> nil then
-        res^.Info := e.ClassName + ' ' + e.Message;
+    on e: Exception do
+    begin
+      compiled := false;
+      info := e.ClassName + ' ' + e.Message;
+    end;
   end;
+
+  FCommandProxy.SetShaderReloadResult(compiled, info);
 end;
 
 procedure TRunThread.cmdGetLastFrameResult(AData: Pointer);

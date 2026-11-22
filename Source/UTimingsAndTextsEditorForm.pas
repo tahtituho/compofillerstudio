@@ -75,6 +75,7 @@ type
     procedure DeleteRowActionUpdate(Sender: TObject);
     procedure FontNameButtonClick(Sender: TObject);
     procedure FontNameEditChange(Sender: TObject);
+    procedure InputControlExit(Sender: TObject);
     procedure Font_some_SpinEditChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -235,6 +236,11 @@ begin
   SetAutoRebuildNeeded(true);
 end;
 
+procedure TTimingsAndTextsEditorForm.InputControlExit(Sender: TObject);
+begin
+  MainForm.AutoRebuildInputExit(Sender);
+end;
+
 procedure TTimingsAndTextsEditorForm.Font_some_SpinEditChange(Sender: TObject);
 begin
   if Sender is TSpinEdit then
@@ -376,6 +382,7 @@ procedure TTimingsAndTextsEditorForm.TimingsAndTextsStringGridEditingDone(
   Sender: TObject);
 begin
   SortRows;
+  InputControlExit(Sender);
 end;
 
 procedure TTimingsAndTextsEditorForm.TimingsAndTextsStringGridPrepareCanvas(sender: TObject;

@@ -8,7 +8,5 @@
 # Compofiller Studio provides this script with the SOURCE_FILE and DESTINATION_FILE variables
 
 
-TEMP_PROCESSED_SHADER_FILE=__temp_processed_shader.glsl
-
 $(DESTINATION_FILE):
-    "$(PROGRAM_DIR)\Tools\ShaderMinifier\shader_minifier.exe" $(TEMP_PROCESSED_SHADER_FILE) -o $(DESTINATION_FILE)
+    "$(PROGRAM_DIR)\Tools\ShaderMinifier\shader_minifier.exe" "$(SOURCE_FILE)" -o "$(DESTINATION_FILE)"

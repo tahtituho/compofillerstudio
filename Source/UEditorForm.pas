@@ -24,9 +24,7 @@ type
     BookmarkImages: TImageList;
     KeyShortcutsHelpLabel: TLabel;
     SearchTextEdit: TLabeledEdit;
-    MinifyEditorShaderFromParentAction1: TAction;
     AutoReloadCheckBox: TCheckBox;
-    MinifyFromParentButton: TButton;
     EditorsPanel: TPanel;
     SearchReplacePanel: TPanel;
     ProcessedTextMemoLabel: TLabel;
@@ -46,7 +44,6 @@ type
     procedure EndSearchActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure MinifyEditorShaderFromParentAction1Update(Sender: TObject);
     procedure RemoveCCommentsButtonClick(Sender: TObject);
     procedure SaveActionExecute(Sender: TObject);
     procedure SearchAgainActionExecute(Sender: TObject);
@@ -463,11 +460,6 @@ begin
   end;
   UnprocessedTextMemo.Refresh;
 end; // ShowErrorsOnLines
-
-procedure TEditorForm.MinifyEditorShaderFromParentAction1Update(Sender: TObject);
-begin
-  //
-end;
 
 function TEditorForm.CheckFileChanged : Boolean;
 var

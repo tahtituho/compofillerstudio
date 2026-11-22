@@ -13,7 +13,7 @@ uses
 
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, RichMemo,
   Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, ActnList,
-  EditBtn, Buttons,
+  EditBtn, Buttons, Spin,
   UEngine,
 
   UWaveformZoomDisplay, Types,
@@ -98,8 +98,6 @@ type
     OpenProjectButton: TButton;
     KeepAudioCheckBox: TCheckBox;
     ParentConfigLabel: TLabel;
-    MinifyShaderFromParentButton: TButton;
-    MinifyShaderFromParentAction: TAction;
     EditShaderAction: TAction;
     EditMusicSourceAction: TAction;
     AutoRebuildDLLCheckBox: TCheckBox;
@@ -201,8 +199,6 @@ type
     procedure LoopCheckBoxChange(Sender: TObject);
     procedure LoopEndEditChange(Sender: TObject);
     procedure LoopStartEditChange(Sender: TObject);
-    procedure MinifyShaderFromParentActionExecute(Sender: TObject);
-    procedure MinifyShaderFromParentActionUpdate(Sender: TObject);
     procedure MipMapCheckBoxChange(Sender: TObject);
     procedure MusicSourceComboBoxChange(Sender: TObject);
     procedure MusicSourceComboBoxDrawItem(Control: TWinControl; Index: Integer;
@@ -259,6 +255,8 @@ type
     procedure UseTimeDividerInX86CodeCheckBoxChange(Sender: TObject);
     procedure UseTimeUniformCheckBoxChange(Sender: TObject);
     procedure WaveformUpdateTimerTimer(Sender: TObject);
+  published
+    procedure AutoRebuildInputExit(Sender: TObject);
   private
     FProgramPath : String;
     FWaveformZoomDisplay : TWaveformZoomDisplay;
@@ -268,6 +266,7 @@ type
     procedure EngineBuildEnd(ASender: TEngine; ADescription: String);
     procedure EngineBuildStart(ASender: TEngine; ADescription: String);
     procedure EngineShaderErrors(ASender: TEngine; AFileName : String; AErrors: TStrings);
+    procedure EngineShaderCompilationStateChanged(ASender: TEngine; AIsCompiling: Boolean);
     procedure OpenFileInExternalTextEditor(ADirectory: String; AFileName: String;
       ALineNumber: Integer);
     procedure EnginePlaybackStateChanged(ASender: TEngine; ADescription: String);
@@ -482,8 +481,25 @@ end;
 procedure TMainForm.SetAutoRebuildNeeded(AValue: Boolean);
 begin
   FAutoRebuildNeeded := AValue;
+  if AValue and
+     ((Screen.ActiveControl is TCustomEdit)
+      or (Screen.ActiveControl is TFileNameEdit)
+      or (Screen.ActiveControl is TSpinEdit)) then
+  begin
+    AutoRebuildTimer.Enabled := false;
+    Exit;
+  end;
   if AutoRebuildTimer.Enabled then
   begin // reset timer
+    AutoRebuildTimer.Enabled := false;
+    AutoRebuildTimer.Enabled := true;
+  end;
+end;
+
+procedure TMainForm.AutoRebuildInputExit(Sender: TObject);
+begin
+  if FAutoRebuildNeeded and AutoRebuildDLLCheckBox.Checked then
+  begin
     AutoRebuildTimer.Enabled := false;
     AutoRebuildTimer.Enabled := true;
   end;
@@ -829,7 +845,10 @@ end;
 
 procedure TMainForm.ShaderFileNameEditChange(Sender: TObject);
 begin
-  SaveControlToConfig(ShaderFileNameEdit, ShaderFileNameEdit.Text);
+  SaveControlToConfig(
+    ShaderFileNameEdit,
+    MakePathRelativeToDirectory(FEngine.ProjectDirectory, ShaderFileNameEdit.Text)
+  );
   FEngine.RefreshShaderFileName;
 end;
 
@@ -999,12 +1018,19 @@ begin
   EditorForm.ShowErrorsOnLines(AFileName, AErrors);
 end;
 
+procedure TMainForm.EngineShaderCompilationStateChanged(
+  ASender: TEngine; AIsCompiling: Boolean);
+begin
+  VisualsForm.SetShaderCompiling(AIsCompiling);
+end;
+
 procedure TMainForm.FormShow(Sender: TObject);
 begin
   FEngine.OnAddProcessOutputLine := @Self.AddProcessOutputLine;
   FEngine.OnBuildStart := @Self.EngineBuildStart;
   FEngine.OnBuildEnd := @Self.EngineBuildEnd;
   FEngine.OnShaderErrors := @Self.EngineShaderErrors;
+  FEngine.OnShaderCompilationStateChanged := @Self.EngineShaderCompilationStateChanged;
   FEngine.OnPlaybackStateChanged := @Self.EnginePlaybackStateChanged;
 
   CheckTools;
@@ -1112,51 +1138,6 @@ begin
   ChangeEditValueAndSaveToConfigAndRefresh(LoopStartEdit, SanitizeFloat(LoopStartEdit.Text));
   RefreshWaveformDisplayParameters;
   MusicWaveDisplayPanel.Invalidate;
-end;
-
-procedure TMainForm.MinifyShaderFromParentActionExecute(Sender: TObject);
-var
-  parent_shader, parent_shader_config, minified_shader : String;
-begin
-  parent_shader := '';
-  parent_shader_config := '';
-  minified_shader := '';
-  Self.EngineBuildStart(FEngine, 'Minifying shader...');
-  try
-    FEngine.GetConfigVariableInheritedValueAndConfig(CV_SHADER_FILE, parent_shader, parent_shader_config);
-    minified_shader := ExtractFileNameWithoutExt(parent_shader) + '_minified.h';
-    if (parent_shader <> '')
-  //  and (AnsiLowerCase(ExtractFilePath(parent_shader)) <> '.h')
-  //  and (parent_shader <> minified_shader) // <-- what the
-    then
-    begin
-      if FileExists(FEngine.ProjectDirectory + minified_shader) then
-        if MessageDlg(
-             'Confirm overwriting shader?',
-             Format('Shader file %s exists. Overwrite it with a minified version of %s?', [minified_shader, parent_shader]),
-             mtConfirmation,
-             [mbOK, mbCancel], 0) <> mrOK
-        then
-          Exit;
-      if FEngine.MinifyShader(parent_shader, minified_shader, parent_shader_config) then
-      begin
-        FEngine.SetVariableValueInActiveConfig(CV_SHADER_FILE, minified_shader);
-        FEngine.RemapUniformsFromMinifiedShader(parent_shader_config);
-        FEngine.RefreshShaderFileName;
-        SetAutoRebuildNeeded(true);
-      end;
-      RefreshAllAttributes(Sender);
-    end;
-
-  finally
-    Self.EngineBuildEnd(FEngine, '');
-  end;
-end; // MinifyShaderFromParentActionExecute
-
-procedure TMainForm.MinifyShaderFromParentActionUpdate(Sender: TObject);
-begin
-  MinifyShaderFromParentAction.Enabled :=
-    (FEngine <> nil) and (FEngine.GetParentConfig <> '');
 end;
 
 procedure TMainForm.MipMapCheckBoxChange(Sender: TObject);
@@ -1362,6 +1343,14 @@ end;
 
 procedure TMainForm.AutoRebuildTimerTimer(Sender: TObject);
 begin
+  if (Screen.ActiveControl is TCustomEdit)
+     or (Screen.ActiveControl is TFileNameEdit)
+     or (Screen.ActiveControl is TSpinEdit) then
+  begin
+    AutoRebuildTimer.Enabled := false;
+    Exit;
+  end;
+
   if FAutoRebuildNeeded then
   begin
     RebuildTestingDLLsAction.Execute;

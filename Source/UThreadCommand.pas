@@ -214,7 +214,10 @@ function TThreadCommandProxy.ExecuteCommandFuncSync(
   ): TThreadCommadQueueResult;
 var
   rec : TThreadCommandRec;
+  caller_event_handle : THandle;
+  worker_event_handle : THandle;
   wait_result : DWORD;
+  event_handle_transferred : Boolean;
 begin
   if FThreadCrashed then
   begin
@@ -224,12 +227,32 @@ begin
 
   rec.Func := AFunc;
   rec.Data := AData;
-  rec.EventHandle := Windows.CreateEvent(nil, True, False, nil);
+  caller_event_handle := Windows.CreateEvent(nil, True, False, nil);
+  if caller_event_handle = 0 then
+    RaiseLastOSError;
+  worker_event_handle := 0;
+  if not Windows.DuplicateHandle(
+    Windows.GetCurrentProcess,
+    caller_event_handle,
+    Windows.GetCurrentProcess,
+    @worker_event_handle,
+    0,
+    False,
+    DUPLICATE_SAME_ACCESS
+  ) then
+  begin
+    Windows.CloseHandle(caller_event_handle);
+    RaiseLastOSError;
+  end;
+  // The worker owns its duplicate, so a caller timeout cannot invalidate SetEvent.
+  rec.EventHandle := worker_event_handle;
+  event_handle_transferred := false;
   try
     Result := Enqueue(rec);
     if Result = tcqOk then
     begin // to make this synchronous, we wait for the command's execution to finish
-      wait_result := Windows.WaitForSingleObject(rec.EventHandle, COMMAND_QUEUE_TIMEOUT_MILLISECONDS);
+      event_handle_transferred := true;
+      wait_result := Windows.WaitForSingleObject(caller_event_handle, COMMAND_QUEUE_TIMEOUT_MILLISECONDS);
       if FThreadCrashed then
         Result := tcqThreadCrashed
       else if wait_result <> WAIT_OBJECT_0 then
@@ -238,7 +261,9 @@ begin
       //  Windows.MessageBox(0, 'A thread might be jammed or something.', 'Is this normal?', Windows.MB_OK);
     end;
   finally
-    CloseHandle(rec.EventHandle);
+    if not event_handle_transferred then
+      CloseHandle(rec.EventHandle);
+    CloseHandle(caller_event_handle);
   end;
 end;
 
@@ -337,36 +362,47 @@ function TThreadCommandProxy.DequeueAndExecute : TThreadCommadQueueResult;
 var
   wait_result : DWORD;
   cmd : TThreadCommandRec;
+  has_command : Boolean;
 begin
   if FThreadCrashed then
     Result := tcqThreadCrashed
   else
   begin
     Result := tcqSomeUnknownThing;
+    has_command := false;
     wait_result := Windows.WaitForSingleObject(FQueueMutex, COMMAND_QUEUE_TIMEOUT_MILLISECONDS);
     case wait_result of
       WAIT_OBJECT_0 :
         try
-          if FQueue.Empty then
+          has_command := not FQueue.Empty;
+          if not has_command then
             Result := tcqQueueEmpty
           else
-          begin
-            cmd := FQueue.Pop;             // get command
-            cmd.Func(cmd.Data); // call its function with the given data
-            if cmd.EventHandle > 0 then   // and set event to signaled state, if event handle given
-            begin
-              if not Windows.SetEvent(cmd.EventHandle) then
-                raise Exception.Create('Could not SetEvent()!');
-              // now it's the caller's duty to CloseHandle the event
-            end;
-
-            Result := tcqOk;
-          end;
+            cmd := FQueue.Pop;
         finally
           Windows.ReleaseMutex(FQueueMutex);
         end;
       WAIT_ABANDONED : Result := tcqTimeout;
     end; // case wait_result
+
+    if (wait_result = WAIT_OBJECT_0) and has_command then
+    begin
+      // Slow commands must not hold the queue lock; producers can enqueue while one runs.
+      try
+        cmd.Func(cmd.Data);
+        Result := tcqOk;
+      finally
+        if cmd.EventHandle > 0 then
+        begin
+          try
+            if not Windows.SetEvent(cmd.EventHandle) then
+              RaiseLastOSError;
+          finally
+            Windows.CloseHandle(cmd.EventHandle);
+          end;
+        end;
+      end;
+    end;
   end;
 end; // TThreadCommandProxy.DequeueAndExecute
 
